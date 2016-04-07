@@ -2,6 +2,10 @@
   <div class="panel-heading">Schedule Builder:
   </div>
   <div class="panel-body">
-    You will be able to build a schedule from this page.
+    <div class="success" ng-show="builderCtrl.isSuccess()">You have successfully created a new job.<br /><br /></div>
+    <div class="warning" ng-show="builderCtrl.isError()">{{ builderCtrl.errorMessage }}<br /><br /></div>
+    Build a schedule by clicking this button:
+    <br /><br />
+    <button class="btn btn-success" type="submit" ng-click="builderCtrl.buildSchedule()" name="submit">Build Schedule</button>
   </div>
 </div>

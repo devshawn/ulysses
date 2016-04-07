@@ -48,17 +48,6 @@ angular.module('ulyssesApp')
         self.errorMessage = "You have yet to create time slots for your entered jobs.";
       } else {
         console.log("Start creating schedule...");
-
-        // sort volunteers by most child teams to watch
-        Volunteer.query({}, function(results) {
-          var volunteers = results;
-          volunteers.sort(function(a, b) {
-            return b.childTeam.length - a.childTeam.length;
-          });
-
-
-          console.log(volunteers);
-        });
       }
     }
   });
