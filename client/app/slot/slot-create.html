@@ -119,4 +119,22 @@
   </div>
 </div>
 
+<br />
 
+<div class="panel panel-default slot-container">
+  <div class="panel-heading">Time slots for this job:
+    <div class="pull-right"><a href="/slots/create">Add a time slot</a></div>
+  </div>
+  <div class="list-group">
+    <div class="list-group-item no-padding" ng-repeat="slot in slotCtrl.data | orderBy: 'start'">
+      <a ng-href="/slots/{{slot._id}}" class="group-item">
+        <strong>Start time</strong>: {{ slotCtrl.parseTime(slot.start) }} <br />
+        <strong>End time</strong>: {{ slotCtrl.parseTime(slot.end) }} <br />
+        <strong>Volunteers needed for slot</strong>: {{ slot.volunteersNeeded }} <br />
+        <strong>Volunteers still neeeded</strong>: {{ slot.left }} <br />
+      </a>
+      <a ng-click="slotCtrl.removeSlot(slot)" ng-href="" class="btn btn-sm btn-danger group-item-remove"><span class="glyphicon glyphicon-trash"></span></a>
+    </div>
+  </div>
+  <div class="panel-body" ng-hide="slotCtrl.areThereSlots()">There are currently no time slots.</div>
+</div>

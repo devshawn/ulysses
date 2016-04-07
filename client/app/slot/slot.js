@@ -17,7 +17,7 @@ angular.module('ulyssesApp')
         authenticate: 'organizer'
       }).state('slot-create-define', {
         url: '/slots/create',
-        templateUrl: 'app/slot/slot-create.html',
+        templateUrl: 'app/slot/slot-pick-job.html',
         controller: 'SlotCtrl',
         controllerAs: 'slotCtrl',
         authenticate: 'organizer'

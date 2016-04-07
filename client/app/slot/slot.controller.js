@@ -113,6 +113,52 @@ angular.module('ulyssesApp')
       return title;
     }
 
+    self.areThereSlots = function() {
+      if(self.data) {
+        return !(self.data.length == 0);
+      }
+    }
+
+    self.removeSlot = function (slot) {
+      if (confirm("Are you sure you want to delete? This will remove all volunteers from this time slot.")) {
+        console.log("Deleting");
+
+        var vols = slot.volunteers;
+        vols.forEach(function(volunteer) {
+          Volunteer.get({id: volunteer}, function(results) {
+            var vol = results;
+            var index = vol.slots.indexOf(slot._id);
+            if(index > -1) {
+              vol.slots.splice(index, 1);
+            }
+            console.log("updating");
+
+            index = -1;
+            var i = 0;
+            vol.locations.forEach(function(location) {
+              if(location.slotID == slot._id) {
+                console.log("found");
+                index = i;
+              }
+              i++;
+            });
+
+            if(index > -1) {
+              vol.locations.splice(index, 1);
+            }
+
+            Volunteer.update({id: volunteer}, vol);
+          });
+        });
+
+        Slot.remove({id: slot._id});
+        var index = self.data.indexOf(slot);
+        if (index > -1) {
+          self.data.splice(index, 1);
+        }
+      }
+    }
+
     if($state.current.name == "slot") {
 
       Slot.query().$promise.then(function(results) {
@@ -124,52 +170,6 @@ angular.module('ulyssesApp')
       }, function (error) {
         console.log("ERROR");
       });
-
-      self.areThereSlots = function() {
-        if(self.data) {
-          return !(self.data.length == 0);
-        }
-      }
-
-      self.removeSlot = function (slot) {
-        if (confirm("Are you sure you want to delete? This will remove all volunteers from this time slot.")) {
-          console.log("Deleting");
-
-          var vols = slot.volunteers;
-          vols.forEach(function(volunteer) {
-            Volunteer.get({id: volunteer}, function(results) {
-              var vol = results;
-              var index = vol.slots.indexOf(slot._id);
-              if(index > -1) {
-                vol.slots.splice(index, 1);
-              }
-              console.log("updating");
-
-              index = -1;
-              var i = 0;
-              vol.locations.forEach(function(location) {
-                if(location.slotID == slot._id) {
-                  console.log("found");
-                  index = i;
-                }
-                i++;
-              });
-
-              if(index > -1) {
-                vol.locations.splice(index, 1);
-              }
-
-              Volunteer.update({id: volunteer}, vol);
-            });
-          });
-
-          Slot.remove({id: slot._id});
-          var index = self.data.indexOf(slot);
-          if (index > -1) {
-            self.data.splice(index, 1);
-          }
-        }
-      }
 
     } else if ($state.current.name == "slot-detail") {
       self.vols = [];
@@ -340,33 +340,31 @@ angular.module('ulyssesApp')
         }
       }
 
-    } else if($state.current.name == "slot-create" || $state.current.name == "slot-create-define") {
+    } else if($state.current.name == "slot-create") {
 
       self.error = false;
       self.success = false;
-      self.singleJob = false;
+      self.singleJob = true;
       self.errorMessage = "";
 
-      // Get jobs
-      if($stateParams.id) {
-        self.singleJob = true;
-        self.job = Job.get({id: $stateParams.id});
-        self.jobs = [self.job];
-        self.errorMessage = "You cannot create a time slot for a non-existent job.";
-      } else {
-        self.jobs = Job.query();
-        self.errorMessage = "There are currently no entered jobs. To create a time slot, you must first create jobs.";
-      }
+      self.singleJob = true;
+      self.jobs = [];
+      self.job = Job.get({id: $stateParams.id}, function(results) {
+        self.jobs.push(results)
+      });
 
-      self.canCreate = function () {
-        if(self.jobs) {
-          return !(self.jobs.length == 0);
-        }
-      }
+      Slot.query({jobID: $stateParams.id }).$promise.then(function(results) {
+        self.data = results;
+        self.data.forEach(function(slot) {
+          slot["jobTitle"] = self.getJobTitle(slot.jobID);
+          slot["left"] = slot.volunteersNeeded - slot.volunteers.length;
+        })
+      }, function (error) {
+        console.log("ERROR");
+      });
 
-      self.isSingleJob = function() {
-        return self.singleJob;
-      }
+      self.errorMessage = "You cannot create a time slot for a non-existent job.";
+      console.log(self.singleJob)
 
       self.createSlot = function () {
         console.log("clicked submit!");
@@ -383,6 +381,9 @@ angular.module('ulyssesApp')
               volunteersNeeded: self.volunteersNeeded,
               jobID: self.jobtitle,
               createdBy: Auth.getCurrentUser()._id
+            }, function(results) {
+              results["left"] = results.volunteersNeeded
+              self.data.push(results);
             });
             self.error = false;
             self.jobtitle = "";
@@ -404,7 +405,28 @@ angular.module('ulyssesApp')
           self.success = false;
           self.errorMessage = "You must fill out all of the required fields.";
         }
+      }
 
+    } else if($state.current.name == "slot-create-define") {
+      self.error = false;
+      self.success = false;
+      self.singleJob = false;
+      self.errorMessage = "";
+
+      self.jobs = Job.query();
+      self.errorMessage = "There are currently no entered jobs. To create a time slot, you must first create jobs.";
+
+    }
+
+    self.isSingleJob = function() {
+      return self.singleJob;
+    }
+
+    self.canCreate = function () {
+      console.log("asdf");
+      if(self.jobs) {
+        return !(self.jobs.length == 0);
       }
     }
+
   });
