@@ -33,9 +33,9 @@
           <div class="form-group pull-left">
             <label for="volunteer">Pick a volunteer</label><br />
             <select id="volunteer" name="volunteer" ng-model="slotCtrl.volunteer" required>
-              <option class="dropdown-header" disabled>Volunteers that prefer this job:</option>
-              <option ng-repeat="vol in slotCtrl.volunteers | filter: slotCtrl.getJobTitle(slotCtrl.slot.jobID) | orderBy: 'lastName'" value="{{ vol._id }}" >{{ vol.firstName }} {{ vol.lastName }}</option>
-              <option class="dropdown-header" disabled>All volunteers:</option>
+              <option ng-show="filteredVols.length" class="dropdown-header" disabled>Volunteers that prefer this job:</option>
+              <option ng-show="filteredVols.length" ng-repeat="vol in filteredVols = (slotCtrl.volunteers | filter: slotCtrl.getJobTitle(slotCtrl.slot.jobID) | orderBy: 'lastName')" value="{{ vol._id }}" >{{ vol.firstName }} {{ vol.lastName }}</option>
+              <option ng-show="filteredVols.length" class="dropdown-header" disabled>All volunteers:</option>
               <option ng-repeat="vol in slotCtrl.volunteers | orderBy: 'lastName'" value="{{ vol._id }}" >{{ vol.firstName }} {{ vol.lastName }}</option>
             </select>
           </div>
