@@ -1,9 +1,14 @@
 <div class="panel panel-default slot-container">
   <div class="panel-heading">Pick a job to create a time slot for:</div>
+  <div class="list-group" ng-show="slotCtrl.canCreate()">
+    <div class="list-group-item no-padding" style="" ng-repeat="job in slotCtrl.jobs">
+      <a ng-href="/slots/create/{{job._id}}" class="group-item">
+        <strong>Job title</strong>: {{ job.title }} <br />
+        <strong>Description</strong>: {{ job.description }}
+      </a>
+    </div>
+  </div>
   <div class="panel-body" ng-hide="slotCtrl.canCreate()">
     {{ slotCtrl.errorMessage }}
-  </div>
-  <div class="list-group" ng-show="slotCtrl.canCreate()">
-    <a ng-href="/slots/create/{{ job._id }}" class="list-group-item" ng-repeat="job in slotCtrl.jobs">{{ job.title }}</a>
   </div>
 </div>

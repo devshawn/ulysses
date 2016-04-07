@@ -4,7 +4,6 @@
     {{ slotCtrl.errorMessage }}
   </div>
   <div class="panel-body" ng-show="slotCtrl.canCreate()">
-    Create a time slot here. You can assign a job to this time slot and how many volunteers are needed for this.<br /><br />
     <div class="success" ng-show="slotCtrl.isSuccess()">You have successfully entered a time slot.<br /><br /></div>
     <div class="warning" ng-show="slotCtrl.isError()">{{ slotCtrl.errorMessage }}<br /><br /></div>
     <form>
@@ -111,10 +110,10 @@
         </select>
       </div>
       <div class="form-group">
-        <label for="volunteersNeeded">Volunteers Needed</label>
+        <label for="volunteersNeeded">Volunteers Needed</label><br />
         <input type="number" name="volunteersNeeded" id="volunteersNeeded" ng-model="slotCtrl.volunteersNeeded" min="1" max="100">
       </div>
-      <button type="submit" ng-click="slotCtrl.createSlot()" class="btn btn-default">Submit</button>
+      <button type="submit" ng-click="slotCtrl.createSlot()" class="btn btn-default">Create Time Slot</button>
     </form>
   </div>
 </div>
