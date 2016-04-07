@@ -1,9 +1,9 @@
 <div class="panel panel-default" ng-class="scheduleCtrl.getClass()">
   <div class="panel-heading">Master Schedule:
-    <!--<div class="pull-right">
+    <div class="pull-right">
       <span ng-show="scheduleCtrl.getSlotMode()"><a href="" ng-click="scheduleCtrl.toggleSlotMode()">View Volunteer Schedule</a></span>
       <span ng-hide="scheduleCtrl.getSlotMode()"><a href="" ng-click="scheduleCtrl.toggleSlotMode()">View Slot Schedule</a></span>
-    </div>-->
+    </div>
   </div>
   <ul class="list-group" ng-show="scheduleCtrl.areThereJobs() && !scheduleCtrl.getSlotMode()">
     <li class="list-group-item list-group-item-information clearfix">
@@ -15,7 +15,7 @@
     <li class="list-group-item clearfix" ng-init="data = scheduleCtrl.getRow(time)" ng-repeat="time in scheduleCtrl.times | orderBy: ''">
       <div class="col-xs-2">{{ scheduleCtrl.parseTime(time) }} </div>
       <div class="col" style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
-        {{ scheduleCtrl.displaySlot(job._id, data["slots"]) }}
+        <!-- {{ scheduleCtrl.displaySlot(job._id, data["slots"]) }} -->
       </div>
     </li>
   </ul>
@@ -29,7 +29,7 @@
     <li class="list-group-item clearfix" ng-init="data = scheduleCtrl.getRow(time)" ng-repeat="time in scheduleCtrl.times | orderBy: ''">
       <div class="col-xs-2">{{ scheduleCtrl.parseTime(time) }} </div>
       <div class="col" style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
-        test
+        <p ng-bind-html="scheduleCtrl.displaySlotNew(job._id, data['slots']) | unsafe"></p>
       </div>
     </li>
   </ul>

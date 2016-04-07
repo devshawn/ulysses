@@ -1,9 +1,15 @@
 'use strict';
 
+angular.module('ulyssesApp').filter('unsafe', function($sce) {
+  return function(val) {
+    return $sce.trustAsHtml(val);
+  }
+})
+
 angular.module('ulyssesApp')
-  .controller('ScheduleCtrl', function ($scope, $state, $stateParams, Job, Slot, Auth, Volunteer) {
+  .controller('ScheduleCtrl', function ($scope, $state, $stateParams, Job, Slot, Auth, Volunteer, $sce) {
     var self = this;
-    self.slotMode = false;
+    self.slotMode = true;
     self.data = {"times" : []};
     self.times = [800,815,830,845,900,915,930,945,1000,1015,1030,1045,1100,1115,1130,1145,1200,1215,1230,1245,1300,1315,1330,1345,1400,1415,1430,1445,1500,1515,1530,1545,1600,1615,1630,1645,1700,1715,1730,1745,1800];
     //self.times = [800, 815, 830, 845, 1700];
@@ -88,6 +94,46 @@ angular.module('ulyssesApp')
           }
         }
         return string;
+      }
+    }
+
+    self.displaySlotNew = function(jobID, data) {
+      if(data) {
+        var returnData = [];
+        var colors = ["red", "green", "blue", "purple", ""]
+        data.forEach(function(element) {
+          if(element["jobID"] == jobID) {
+            element["volunteers"].forEach(function(volunteer) {
+              var vol = volunteer.firstName + " " + volunteer.lastName;
+              var i = 0;
+              var index = -1;
+              self.jobs.forEach(function(job) {
+                if(job._id == jobID) {
+                  index = i;
+                }
+                i++;
+              });
+              var color = colors[index];
+              console.log(color)
+              returnData.push({"vol" : vol, "color" : color});
+            });
+          }
+        });
+
+        returnData.sort();
+        var string = "";
+        for(var i = 0; i < returnData.length; i++) {
+          if(i == returnData.length - 1) {
+            string = string + returnData[i].vol;
+          } else {
+            string = string + returnData[i].vol + ", ";
+          }
+        }
+        if(returnData.length > 0) {
+          return '<div style="color: ' + returnData[0].color + ';">' + string + '</div>';
+        } else {
+          return "";
+        }
       }
     }
 
