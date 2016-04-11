@@ -1,18 +1,22 @@
-/*
+
 'use strict';
 
 var app = require('../..');
+var should = require('should');
 import request from 'supertest';
 
 var newJob;
+var organizer = require('../../auth/authed-agent')('organizer');
 
 describe('Job API:', function() {
+
+  organizer.authorize();
 
   describe('GET /api/jobs', function() {
     var jobs;
 
     beforeEach(function(done) {
-      request(app)
+      organizer
         .get('/api/jobs')
         .expect(200)
         .expect('Content-Type', /json/)
@@ -33,11 +37,11 @@ describe('Job API:', function() {
 
   describe('POST /api/jobs', function() {
     beforeEach(function(done) {
-      request(app)
+      organizer
         .post('/api/jobs')
         .send({
-          name: 'New Job',
-          info: 'This is the brand new job!!!'
+          title: 'New Job',
+          description: 'This is the brand new job!!!'
         })
         .expect(201)
         .expect('Content-Type', /json/)
@@ -51,8 +55,8 @@ describe('Job API:', function() {
     });
 
     it('should respond with the newly created job', function() {
-      newJob.name.should.equal('New Job');
-      newJob.info.should.equal('This is the brand new job!!!');
+      newJob.title.should.equal('New Job');
+      newJob.description.should.equal('This is the brand new job!!!');
     });
 
   });
@@ -61,7 +65,7 @@ describe('Job API:', function() {
     var job;
 
     beforeEach(function(done) {
-      request(app)
+      organizer
         .get('/api/jobs/' + newJob._id)
         .expect(200)
         .expect('Content-Type', /json/)
@@ -79,8 +83,8 @@ describe('Job API:', function() {
     });
 
     it('should respond with the requested job', function() {
-      job.name.should.equal('New Job');
-      job.info.should.equal('This is the brand new job!!!');
+      job.title.should.equal('New Job');
+      job.description.should.equal('This is the brand new job!!!');
     });
 
   });
@@ -89,11 +93,11 @@ describe('Job API:', function() {
     var updatedJob;
 
     beforeEach(function(done) {
-      request(app)
+      organizer
         .put('/api/jobs/' + newJob._id)
         .send({
-          name: 'Updated Job',
-          info: 'This is the updated job!!!'
+          title: 'Updated Job',
+          description: 'This is the updated job!!!'
         })
         .expect(200)
         .expect('Content-Type', /json/)
@@ -111,8 +115,8 @@ describe('Job API:', function() {
     });
 
     it('should respond with the updated job', function() {
-      updatedJob.name.should.equal('Updated Job');
-      updatedJob.info.should.equal('This is the updated job!!!');
+      updatedJob.title.should.equal('Updated Job');
+      updatedJob.description.should.equal('This is the updated job!!!');
     });
 
   });
@@ -120,7 +124,7 @@ describe('Job API:', function() {
   describe('DELETE /api/jobs/:id', function() {
 
     it('should respond with 204 on successful removal', function(done) {
-      request(app)
+      organizer
         .delete('/api/jobs/' + newJob._id)
         .expect(204)
         .end((err, res) => {
@@ -132,7 +136,7 @@ describe('Job API:', function() {
     });
 
     it('should respond with 404 when job does not exist', function(done) {
-      request(app)
+      organizer
         .delete('/api/jobs/' + newJob._id)
         .expect(404)
         .end((err, res) => {
@@ -146,4 +150,3 @@ describe('Job API:', function() {
   });
 
 });
-*/

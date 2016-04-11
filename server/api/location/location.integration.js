@@ -1,18 +1,22 @@
-/*
+
 'use strict';
 
 var app = require('../..');
+var should = require('should');
 import request from 'supertest';
 
 var newLocation;
+var user = require('../../auth/authed-agent')('user');
 
 describe('location API:', function() {
+
+  user.authorize();
 
   describe('GET /api/locations', function() {
     var locations;
 
     beforeEach(function(done) {
-      request(app)
+      user
         .get('/api/locations')
         .expect(200)
         .expect('Content-Type', /json/)
@@ -33,11 +37,10 @@ describe('location API:', function() {
 
   describe('POST /api/locations', function() {
     beforeEach(function(done) {
-      request(app)
+      user
         .post('/api/locations')
         .send({
-          name: 'New location',
-          info: 'This is the brand new location!!!'
+          name: 'New location'
         })
         .expect(201)
         .expect('Content-Type', /json/)
@@ -52,7 +55,6 @@ describe('location API:', function() {
 
     it('should respond with the newly created location', function() {
       newLocation.name.should.equal('New location');
-      newLocation.info.should.equal('This is the brand new location!!!');
     });
 
   });
@@ -61,7 +63,7 @@ describe('location API:', function() {
     var location;
 
     beforeEach(function(done) {
-      request(app)
+      user
         .get('/api/locations/' + newLocation._id)
         .expect(200)
         .expect('Content-Type', /json/)
@@ -80,7 +82,6 @@ describe('location API:', function() {
 
     it('should respond with the requested location', function() {
       location.name.should.equal('New location');
-      location.info.should.equal('This is the brand new location!!!');
     });
 
   });
@@ -89,11 +90,10 @@ describe('location API:', function() {
     var updatedLocation;
 
     beforeEach(function(done) {
-      request(app)
+      user
         .put('/api/locations/' + newLocation._id)
         .send({
-          name: 'Updated location',
-          info: 'This is the updated location!!!'
+          name: 'Updated location'
         })
         .expect(200)
         .expect('Content-Type', /json/)
@@ -112,7 +112,6 @@ describe('location API:', function() {
 
     it('should respond with the updated location', function() {
       updatedLocation.name.should.equal('Updated location');
-      updatedLocation.info.should.equal('This is the updated location!!!');
     });
 
   });
@@ -120,7 +119,7 @@ describe('location API:', function() {
   describe('DELETE /api/locations/:id', function() {
 
     it('should respond with 204 on successful removal', function(done) {
-      request(app)
+      user
         .delete('/api/locations/' + newLocation._id)
         .expect(204)
         .end((err, res) => {
@@ -132,7 +131,7 @@ describe('location API:', function() {
     });
 
     it('should respond with 404 when location does not exist', function(done) {
-      request(app)
+      user
         .delete('/api/locations/' + newLocation._id)
         .expect(404)
         .end((err, res) => {
@@ -146,4 +145,3 @@ describe('location API:', function() {
   });
 
 });
-*/

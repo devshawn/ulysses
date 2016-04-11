@@ -1,4 +1,4 @@
-/*
+
 'use strict';
 
 import app from '../..';
@@ -64,4 +64,3 @@ describe('User API:', function() {
     });
   });
 });
-*/

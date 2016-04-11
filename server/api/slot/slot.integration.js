@@ -1,18 +1,22 @@
-/*
+
 'use strict';
 
 var app = require('../..');
+var should = require('should');
 import request from 'supertest';
 
 var newSlot;
+var organizer = require('../../auth/authed-agent')('organizer');
 
 describe('Slot API:', function() {
+
+  organizer.authorize();
 
   describe('GET /api/slots', function() {
     var slots;
 
     beforeEach(function(done) {
-      request(app)
+      organizer
         .get('/api/slots')
         .expect(200)
         .expect('Content-Type', /json/)
@@ -33,11 +37,12 @@ describe('Slot API:', function() {
 
   describe('POST /api/slots', function() {
     beforeEach(function(done) {
-      request(app)
+      organizer
         .post('/api/slots')
         .send({
-          name: 'New Slot',
-          info: 'This is the brand new slot!!!'
+          start: 500,
+          end: 800,
+          volunteers: []
         })
         .expect(201)
         .expect('Content-Type', /json/)
@@ -51,8 +56,8 @@ describe('Slot API:', function() {
     });
 
     it('should respond with the newly created slot', function() {
-      newSlot.name.should.equal('New Slot');
-      newSlot.info.should.equal('This is the brand new slot!!!');
+      newSlot.start.should.equal(500);
+      newSlot.end.should.equal(800);
     });
 
   });
@@ -61,7 +66,7 @@ describe('Slot API:', function() {
     var slot;
 
     beforeEach(function(done) {
-      request(app)
+      organizer
         .get('/api/slots/' + newSlot._id)
         .expect(200)
         .expect('Content-Type', /json/)
@@ -79,8 +84,8 @@ describe('Slot API:', function() {
     });
 
     it('should respond with the requested slot', function() {
-      slot.name.should.equal('New Slot');
-      slot.info.should.equal('This is the brand new slot!!!');
+      slot.start.should.equal(500);
+      slot.end.should.equal(800);
     });
 
   });
@@ -89,11 +94,11 @@ describe('Slot API:', function() {
     var updatedSlot;
 
     beforeEach(function(done) {
-      request(app)
+      organizer
         .put('/api/slots/' + newSlot._id)
         .send({
-          name: 'Updated Slot',
-          info: 'This is the updated slot!!!'
+          start: '600',
+          end: '700'
         })
         .expect(200)
         .expect('Content-Type', /json/)
@@ -111,8 +116,8 @@ describe('Slot API:', function() {
     });
 
     it('should respond with the updated slot', function() {
-      updatedSlot.name.should.equal('Updated Slot');
-      updatedSlot.info.should.equal('This is the updated slot!!!');
+      updatedSlot.start.should.equal(600);
+      updatedSlot.end.should.equal(700);
     });
 
   });
@@ -120,7 +125,7 @@ describe('Slot API:', function() {
   describe('DELETE /api/slots/:id', function() {
 
     it('should respond with 204 on successful removal', function(done) {
-      request(app)
+      organizer
         .delete('/api/slots/' + newSlot._id)
         .expect(204)
         .end((err, res) => {
@@ -132,7 +137,7 @@ describe('Slot API:', function() {
     });
 
     it('should respond with 404 when slot does not exist', function(done) {
-      request(app)
+      organizer
         .delete('/api/slots/' + newSlot._id)
         .expect(404)
         .end((err, res) => {
@@ -146,4 +151,3 @@ describe('Slot API:', function() {
   });
 
 });
-*/

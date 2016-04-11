@@ -14,7 +14,6 @@ export default function(app) {
   app.use('/api/slots', require('./api/slot'));
   app.use('/api/jobs', require('./api/job'));
   app.use('/api/volunteers', require('./api/volunteer'));
-  app.use('/api/things', require('./api/thing'));
   app.use('/api/users', require('./api/user'));
   app.use('/api/upload', require('./api/upload'));
 
