@@ -54,7 +54,7 @@ angular.module('ulyssesApp')
     }
 
     //jobsArray should be the list of jobs pulled from the DB as of this comment.
-    jobsToShifts(jobsArray) {
+    var jobsToShifts = function(jobsArray) {
       var shiftsArray = [];
       for (var j = 0; j < jobsArray.length; j++) { // j because we are iterating though jobs
         for (var s = 0; s < jobsArray[j].shifts.length; s++) {
@@ -141,7 +141,7 @@ angular.module('ulyssesApp')
     }
 
 
-    print(arg){
+    var print = function(arg){
       console.log(arg);
     }
   });
