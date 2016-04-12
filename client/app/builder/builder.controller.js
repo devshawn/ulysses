@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('ulyssesApp')
-  .controller('BuilderCtrl', function ($scope, $state, $stateParams, Job, Slot, Auth, Volunteer) {
+  .controller('BuilderCtrl', function ($scope, $state, $stateParams, Job, Slot, Auth, Volunteer, Team) {
     var self = this;
     self.error = false;
     self.success = false;
@@ -48,8 +48,102 @@ angular.module('ulyssesApp')
       } else {
         console.log("Start creating schedule...");
 
-        // call generate schedule here
+        var checkChild = function(volunteer) {
+          return volunteer.childTeam.length > 12;
+        }
 
+        // function from http://blog.stevenlevithan.com/archives/javascript-roman-numeral-converter
+        var romanize = function(num) {
+            if (!+num)
+                return false;
+            var digits = String(+num).split(""),
+                key = ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM",
+                       "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC",
+                       "","I","II","III","IV","V","VI","VII","VIII","IX"],
+                roman = "",
+                i = 3;
+            while (i--)
+                roman = (key[+digits.pop() + (i * 10)] || "") + roman;
+            return Array(+digits.join("") + 1).join("M") + roman;
+        }
+
+        var numberPlace = function(number, increment){
+            return number%increment;
+        }
+
+        var subtract15Minutes = function(time) {
+          var newTime = numberPlace(time, 100);
+          if(newTime >= 15) {
+            time = time - 15;
+          } else {
+            if(time >= 100 && time < 200) {
+              time = time + 1200;
+            }
+            time = time - 55;
+          }
+          return time;
+        }
+
+        var add45Minutes = function(time) {
+          var newTime = numberPlace(time, 100);
+          if(newTime < 15) {
+            time = time + 45;
+          } else {
+            if(time >= 1215) {
+              time = time + 85;
+              time = time % 1200;
+            } else {
+              time = time + 85;
+            }
+          }
+          return time;
+        }
+
+        // first, find all team conflicts for volunteersNeeded
+        var volunteers;
+        Volunteer.query({}, function(results) {
+          volunteers = results;
+          volunteers = volunteers.filter(checkChild);
+          console.log(volunteers);
+
+          // next, loop through volunteers and check for team conflicts
+          Team.query({}, function(teams) {
+            volunteers.forEach(function(vol, i, theVolArray) {
+              vol.commitments = [];
+              // create array of child team / division stuff to look through
+              var array = vol.childTeam.split(',');
+              array.forEach(function(item, index, theArray) {
+                item = item.trim();
+                item = item.replace(/^#/, '');
+                var memberNumber = item.split(' ')[0];
+                var problemNumber = item.split(' ')[1].split('/')[0];
+                var divisionNumber = romanize(item.split(' ')[1].split('/')[1]);
+                theArray[index] = {'member' : memberNumber, 'problem' : problemNumber, 'division' : divisionNumber};
+              });
+
+              // loop through each value in the array and check for a team conflict
+              array.forEach(function(item) {
+                teams.forEach(function(team) {
+                  if(team.problem == item.problem && team.division == item.division && team.teamNumber == item.member) {
+                    var startTime = subtract15Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+                    var endTime = add45Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+                    //console.log("Old: ", team.longTime, "new: ", longTime);
+                    vol.commitments.push({'start' : startTime, 'end' : endTime});
+                  }
+                });
+              });
+
+              console.log(array);
+              theVolArray[i] = vol;
+            });
+            console.log(volunteers);
+          });
+        });
+
+        // do slots
+        Slot.query({}, function(results) {
+          //
+        });
       }
     }
 
