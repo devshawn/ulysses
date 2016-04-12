@@ -4,7 +4,12 @@
 
 ### Adding it to your project
 
-First, change this line in `package.json`:
+Run this command:
+
+`npm run update-webdriver`
+
+If you get an error, change this line in `package.json`:
+
 ```javascript
 "update-webdriver": "node node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update"
 ```
@@ -15,7 +20,7 @@ To this line:
 "update-webdriver": "node node_modules/protractor/bin/webdriver-manager update"
 ```
 
-Next, run the following command in the terminal in your project's root directory.
+Then, run the following command in the terminal in your project's root directory.
 
 `npm run update-webdriver`
 
