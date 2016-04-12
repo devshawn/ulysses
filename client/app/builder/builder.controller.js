@@ -147,20 +147,6 @@ angular.module('ulyssesApp')
       }
     }
 
-    //jobsArray should be the list of jobs pulled from the DB as of this comment.
-    var jobsToShifts = function(jobsArray) {
-      var shiftsArray = [];
-      for (var j = 0; j < jobsArray.length; j++) { // j because we are iterating though jobs
-        for (var s = 0; s < jobsArray[j].shifts.length; s++) {
-          shiftsArray.push({_id: jobsArray[j]._id,
-            start: jobsArray[j].shifts[s].shiftStart,
-            end: jobsArray[j].shifts[s].shiftEnd})
-        }
-        console.log(j);
-      }
-      return shiftsArray;
-    }
-
     //person structure {'commitments':[]}
     //commitment {'slotID' : string, 'start':n1,'end':n2}
     //preference {'thing':j,'magnitude':m}
@@ -171,6 +157,28 @@ angular.module('ulyssesApp')
 
     // output:
     // [{'volunteerID' : String, 'slotID' : String}]
+
+
+    var prettyMakeSchedule=function(slots,volunteers){
+      return self.prettifyOutput(self.makeSchedules(self.slotsToJobs(slots),volunteers),1000);
+    }
+
+
+    var slotsToJobs = function(arrayOfSlots){
+      return arrayOfSlots.reduce(function(a,b){
+        var i=a.volunteersNeeded;
+        while(i-->0){b.push({'volunteerID':a.volunteerID,'start':a.start,'end':a.end});}
+        return b;
+      });}
+
+    var prettifyOutput = function(schedules){
+      return schedules.reduce(function(a,b){
+        a.commitments.forEach(function(x){
+          b.push({'volunteerID':a.volunteerID,'slotID':x.slodID});
+        })
+        return b;
+      })
+    }
 
     var makeSchedules = function(jobs,volunteers,n){
       var i=0;
