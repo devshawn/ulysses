@@ -1,36 +1,20 @@
 <div class="panel panel-default" ng-class="scheduleCtrl.getClass()">
   <div class="panel-heading">Master Schedule:
     <div class="pull-right">
-      <span ng-show="scheduleCtrl.getSlotMode()"><a href="" ng-click="scheduleCtrl.toggleSlotMode()">View Volunteer Schedule</a></span>
-      <span ng-hide="scheduleCtrl.getSlotMode()"><a href="" ng-click="scheduleCtrl.toggleSlotMode()">View Slot Schedule</a></span>
+      <span ng-show="scheduleCtrl.getSlotMode()"><a href="/schedule/volunteers">View Volunteer Schedule</a></span>
     </div>
   </div>
-  <ul class="list-group" ng-show="scheduleCtrl.areThereJobs() && !scheduleCtrl.getSlotMode()">
-    <li class="list-group-item list-group-item-information clearfix">
-      <div class="col-xs-2">Time</div>
-      <div class="col" style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
-        {{ job.title }}
-      </div>
-    </li>
-    <li class="list-group-item clearfix" ng-init="data = scheduleCtrl.getRow(time)" ng-repeat="time in scheduleCtrl.times | orderBy: ''">
-      <div class="col-xs-2">{{ scheduleCtrl.parseTime(time) }} </div>
-      <div class="col" style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
-        <!-- {{ scheduleCtrl.displaySlot(job._id, data["slots"]) }} -->
-      </div>
-    </li>
-  </ul>
-  <ul class="list-group" ng-show="scheduleCtrl.areThereJobs() && scheduleCtrl.getSlotMode()">
-    <li class="list-group-item list-group-item-information clearfix">
-      <div class="col-xs-2">Time</div>
-      <div class="col" style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
-        {{ job.title }}
-      </div>
-    </li>
-    <li class="list-group-item clearfix" ng-init="data = scheduleCtrl.getRow(time)" ng-repeat="time in scheduleCtrl.times | orderBy: ''">
-      <div class="col-xs-2">{{ scheduleCtrl.parseTime(time) }} </div>
-      <div class="col" style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
-        <p ng-bind-html="scheduleCtrl.displaySlotNew(job._id, data['slots']) | unsafe"></p>
-      </div>
+  <ul class="list-group clearfix" ng-show="scheduleCtrl.areThereJobs() && scheduleCtrl.getSlotMode()">
+    <li class="col list-group-item" style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
+      <ul class="list-group">
+        <li class="list-group-item list-group-item-information">{{ job.title }}</li>
+        <div class="list-group-item no-padding" >
+          <a ng-href="/slots/{{slot._id}}" class="group-item">
+            <strong>Start time</strong>: {{ slot.start }} <br />
+
+          </a>
+        </div>
+      </ul>
     </li>
   </ul>
   <div class="panel-body" ng-hide="scheduleCtrl.areThereJobs()">In order to view the master schedule, please enter at least one job.</div>

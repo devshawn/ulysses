@@ -1,0 +1,22 @@
+<div class="panel panel-default" ng-class="scheduleCtrl.getClass()">
+  <div class="panel-heading">Master Schedule:
+    <div class="pull-right">
+      <span ng-hide="scheduleCtrl.getSlotMode()"><a href="/schedule">View Slot Schedule</a></span>
+    </div>
+  </div>
+  <ul class="list-group" ng-show="scheduleCtrl.areThereJobs() && !scheduleCtrl.getSlotMode()">
+    <li class="list-group-item list-group-item-information clearfix">
+      <div class="col-xs-2">Time</div>
+      <div class="col" style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
+        {{ job.title }}
+      </div>
+    </li>
+    <li class="list-group-item clearfix" ng-init="data = scheduleCtrl.getRow(time)" ng-repeat="time in scheduleCtrl.times | orderBy: ''">
+      <div class="col-xs-2">{{ scheduleCtrl.parseTime(time) }} </div>
+      <div class="col" style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
+         {{ scheduleCtrl.displaySlot(job._id, data["slots"]) }}
+      </div>
+    </li>
+  </ul>
+  <div class="panel-body" ng-hide="scheduleCtrl.areThereJobs()">In order to view the master schedule, please enter at least one job.</div>
+</div>

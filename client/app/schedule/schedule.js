@@ -9,5 +9,11 @@ angular.module('ulyssesApp')
         controller: 'ScheduleCtrl',
         controllerAs: 'scheduleCtrl',
         authenticate: 'organizer'
+      }).state('schedule-volunteers', {
+        url: '/schedule/volunteers',
+        templateUrl: 'app/schedule/schedule-volunteers.html',
+        controller: 'ScheduleCtrl',
+        controllerAs: 'scheduleCtrl',
+        authenticate: 'organizer'
       });
   });
