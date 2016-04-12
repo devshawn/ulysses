@@ -28,21 +28,21 @@ To run the generated tests, run the following command in the terminal in your pr
 Note: They will most likely fail as you have changed some of the default project stuff.
 
 ### Adding tests to your project & updating existing ones
-##### Default Tests
+#### Default Tests
 Protractor tests are stored in the `/e2e` folder in your project root. By default, there are 2 or 3 default e2e locations:
 - `/e2e/account`: For testing login, logout, and signups _(if you have authentication)_.
 - `/e2e/components`: For testing components such as the navbar
 - `/e2e/main`: For testing the main controller
 
-##### Creating your own tests
+#### Creating your own tests
 To create more tests, simply make a new folder. I name mine the same as the client-side routes. For example, my project's jobs page `localhost:9000/jobs` is in the folder `/client/app/job`. I then created `/job` in the `/e2e` folder. Thus, I can now add end-to-end tests in `/e2e/job` for testing my job page functionality.
 
 To create end-to-end tests, we want to create two files in this new folder:
 - `job.po.js`: This is the page object definition. This is where you find elements based on your CSS and HTML. This helps with testing and not writing repetitive code. More on this later.
 - `job.spec.js`: This is where we write the actual tests. We use the familiar jasmine testing syntax such as _describe_ and _it_.
 
-##### Writing the tests
-###### Page Object (job.po.js)
+#### Writing the tests
+##### Page Object (job.po.js)
 Defining page objects is fairly easy, and follows the following syntax. Let's create the job page order:
 
 ```javascript
@@ -66,7 +66,7 @@ As we see above, we define a new function and set it to export when we include t
 
 In my page object file, I am finding the div with `job-container` as a class _(as symbolized by the dot in front of it)_ and setting it to `this.container`. Next, I am looking for the div with the class `panel-body` inside of `this.container`. This becomes useful later.
 
-###### The Test File (job.spec.js)
+##### The Test File (job.spec.js)
 
 Let's write our first basic test:
 
