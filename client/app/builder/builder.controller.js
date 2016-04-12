@@ -67,9 +67,16 @@ angular.module('ulyssesApp')
       return shiftsArray;
     }
 
-    //person structure {'_id': i,'commitments':[],'preferences':[]}}
-    //commitment {'name': i, 'start':n1,'end':n2}
+    //person structure {'commitments':[]}
+    //commitment {'slotID' : string, 'start':n1,'end':n2}
     //preference {'thing':j,'magnitude':m}
+
+    // input:
+    // slots: {id : string, start: number, end: number, volunteersNeeded: number}
+    // volunteers: {id : string, 'commitments' : []}
+
+    // output:
+    // [{'volunteerID' : String, 'slotID' : String}]
 
     var makeSchedules = function(jobs,volunteers,n){
       var i=0;
