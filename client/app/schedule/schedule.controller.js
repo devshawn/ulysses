@@ -25,6 +25,7 @@ angular.module('ulyssesApp')
         results.forEach(function(job) {
           Slot.query({"jobID" : job._id}, function(results2) {
             self.slots.push({"jobID" : job._id, "slots" : results2});
+            console.log(self.slots);
           });
         });
       });

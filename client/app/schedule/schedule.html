@@ -4,12 +4,18 @@
       <span ng-show="scheduleCtrl.getSlotMode()"><a href="/schedule/volunteers">View Volunteer Schedule</a></span>
     </div>
   </div>
-  <ul class="list-group clearfix" ng-show="scheduleCtrl.areThereJobs() && scheduleCtrl.getSlotMode()">
-    <li class="col list-group-item" style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
-      <ul class="list-group">
+
+  <div class="panel-body" ng-hide="scheduleCtrl.areThereJobs()">In order to view the master schedule, please enter at least one job.</div>
+</div>
+
+<br />
+<div class="schedule-container">
+  <ul class="row clearfix" ng-show="scheduleCtrl.areThereJobs() && scheduleCtrl.getSlotMode()">
+    <li class="col group-item"  style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
+      <ul class="">
         <li class="list-group-item list-group-item-information">{{ job.title }}</li>
         <div class="list-group-item no-padding" >
-          <a ng-href="/slots/{{slot._id}}" class="group-item">
+          <a ng-href="/slots/{{slot._id}}" class="group-item" ng-repeat="slot in self.slots">
             <strong>Start time</strong>: {{ slot.start }} <br />
 
           </a>
@@ -17,5 +23,4 @@
       </ul>
     </li>
   </ul>
-  <div class="panel-body" ng-hide="scheduleCtrl.areThereJobs()">In order to view the master schedule, please enter at least one job.</div>
 </div>

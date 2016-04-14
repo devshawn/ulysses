@@ -49,7 +49,7 @@ angular.module('ulyssesApp')
         console.log("Start creating schedule...");
 
         var checkChild = function(volunteer) {
-          return volunteer.childTeam.length > 12;
+          return volunteer.childTeam.length > 0;
         }
 
         // function from http://blog.stevenlevithan.com/archives/javascript-roman-numeral-converter
@@ -104,7 +104,6 @@ angular.module('ulyssesApp')
         Volunteer.query({}, function(results) {
           volunteers = results;
           volunteers = volunteers.filter(checkChild);
-          console.log(volunteers);
 
           // next, loop through volunteers and check for team conflicts
           Team.query({}, function(teams) {
@@ -136,13 +135,19 @@ angular.module('ulyssesApp')
               console.log(array);
               theVolArray[i] = vol;
             });
-            console.log(volunteers);
+            Slot.query({}, function(slots) {
+              // call generate schedule here
+              console.log("Volunteers: ", volunteers);
+              console.log("Slots: ", results);
+
+              console.log(self.prettyMakeSchedule(slots, volunteers))
+            });
           });
         });
 
         // do slots
         Slot.query({}, function(results) {
-          //
+
         });
       }
     }
@@ -159,19 +164,21 @@ angular.module('ulyssesApp')
     // [{'volunteerID' : String, 'slotID' : String}]
 
 
-    var prettyMakeSchedule=function(slots,volunteers){
+    self.prettyMakeSchedule=function(slots,volunteers){
       return self.prettifyOutput(self.makeSchedules(self.slotsToJobs(slots),volunteers),1000);
     }
 
 
-    var slotsToJobs = function(arrayOfSlots){
+    self.slotsToJobs = function(arrayOfSlots){
+      var b = [];
       return arrayOfSlots.reduce(function(a,b){
         var i=a.volunteersNeeded;
         while(i-->0){b.push({'volunteerID':a.volunteerID,'start':a.start,'end':a.end});}
         return b;
       });}
 
-    var prettifyOutput = function(schedules){
+    self.prettifyOutput = function(schedules){
+      var b = [];
       return schedules.reduce(function(a,b){
         a.commitments.forEach(function(x){
           b.push({'volunteerID':a.volunteerID,'slotID':x.slodID});
@@ -180,7 +187,7 @@ angular.module('ulyssesApp')
       })
     }
 
-    var makeSchedules = function(jobs,volunteers,n){
+    self.makeSchedules = function(jobs,volunteers,n){
       var i=0;
       var best={'schedule':[],'unassigned':[],'score':999999999999999};
       while(i++<n){
@@ -192,7 +199,7 @@ angular.module('ulyssesApp')
       return best;
     }
 
-    var generateSchedule = function(jobs,volunteers){
+    self.generateSchedule = function(jobs,volunteers){
       var j = jobs;
       var v = volunteers;
       var unassigned = j.reduce(function(a,b){
@@ -204,7 +211,7 @@ angular.module('ulyssesApp')
       return {'schedule':v,'unassigned':unassigned,'score':(self.rateSchedule(v)+unassigned.length*5)};
     }
 
-    var addJobToVolunteer = function(job,volunteers){
+    self.addJobToVolunteer = function(job,volunteers){
       var i = 0;
       while(i++<volunteers.length){
         var v = volunteers.shift();
@@ -220,7 +227,7 @@ angular.module('ulyssesApp')
     }
 
     //array->array
-    var shuffleArray = function(arr) {
+    self.shuffleArray = function(arr) {
       var temp;
       var rand;
       for (var i = 0; i < arr.length; i++) {
@@ -232,11 +239,11 @@ angular.module('ulyssesApp')
       return arr;
     }
 
-    var canInsert = function(start,end,commitments){
+    self.canInsert = function(start,end,commitments){
       return commitments.reduce(function(x,y){return x&&(((start>y.start)&&(end>y.end))||((start<y.start)&&(end<y.end)));});
     }
 
-    var rateSchedule = function(schedule) {
+    self.rateSchedule = function(schedule) {
       var score = 0;
       for(var i = 0; i < schedule.length; i++){
         score = score + self.personMetric(schedule[i]);
@@ -245,12 +252,12 @@ angular.module('ulyssesApp')
     }
 
 
-    var personMetric = function(person){
+    self.personMetric = function(person){
       return person.commitments.length * person.commitments.length;
     }
 
 
-    var print = function(arg){
+    self.print = function(arg){
       console.log(arg);
     }
   });
