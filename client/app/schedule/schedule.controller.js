@@ -28,7 +28,7 @@ angular.module('ulyssesApp')
         });
 
         Job.query({}, function(results) {
-          self.width = ((100 / results.length)) + "%";
+          self.width = ((100 / (results.length))) + "%";
           Slot.query({}, function(slots) {
             results.forEach(function(job, index, theArray) {
               slots.forEach(function(slot, i, slotsArray) {

@@ -1,28 +1,20 @@
-<div class="panel panel-default" ng-class="scheduleCtrl.getClass()">
-  <div class="panel-heading">Master Schedule:
-    <div class="pull-right">
-      <span ng-show="scheduleCtrl.getSlotMode()"><a href="/schedule/volunteers">View Volunteer Schedule</a></span>
-    </div>
-  </div>
-
-  <div class="panel-body" ng-hide="scheduleCtrl.areThereJobs()">In order to view the master schedule, please enter at least one job.</div>
-</div>
-
-<br />
-<div class="schedule-container">
-  <ul class="row clearfix" ng-show="scheduleCtrl.areThereJobs() && scheduleCtrl.getSlotMode()">
-    <li class="col group-item"  style="float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
-      <ul class="">
-        <li class="list-group-item list-group-item-information">{{ job.title }}</li>
-        <div class="list-group-item no-padding" >
-          <a ng-href="/slots/{{slot._id}}" class="group-item {{slot.color}}" ng-repeat="slot in job.slots | orderBy: 'start'">
+<div class="schedule-container-big">
+  <div class="clearfix" ng-show="scheduleCtrl.areThereJobs() && scheduleCtrl.getSlotMode()">
+    <div class="list-group"  style="padding: 5px; float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
+      <div class="list-group-item list-group-item-information">{{ job.title }}</div>
+          <a ng-href="/slots/{{slot._id}}" class="list-group-item {{slot.color}}" ng-repeat="slot in job.slots | orderBy: 'start'">
             <strong>Start time</strong>: {{ scheduleCtrl.parseTime(slot.start) }} <br />
             <strong>End time</strong>: {{ scheduleCtrl.parseTime(slot.end) }} <br />
             <strong>Still needed</strong>: {{ slot.left }} <br />
             <strong>Volunteers</strong>: {{ slot.vols }}
           </a>
-        </div>
-      </ul>
-    </li>
-  </ul>
+          <div class="list-group-item" ng-show="!job.slots.length">No time slots.</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel panel-default" ng-class="scheduleCtrl.getClass()" ng-hide="scheduleCtrl.areThereJobs()">
+  <div class="panel-heading">Master Schedule:
+  </div>
+  <div class="panel-body">In order to view the master schedule, please enter at least one job.</div>
 </div>

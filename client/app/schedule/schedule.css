@@ -10,12 +10,7 @@
   min-width: 300px;
 }
 
-.col {
-  position: relative;
-  min-height: 1px;
-  padding-right: 15px;
-  padding-left: 15px;
-}
+
 
 .list-group-item-information {
   color: #000;
@@ -25,4 +20,10 @@
 .color-red {
   background-color: #FFB3B3;
   color: #000;
+}
+
+a.color-red:hover,
+a.color-red:focus {
+  text-decoration: none;
+  background-color: #ffa2a2;
 }
