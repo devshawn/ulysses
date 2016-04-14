@@ -15,9 +15,11 @@
       <ul class="">
         <li class="list-group-item list-group-item-information">{{ job.title }}</li>
         <div class="list-group-item no-padding" >
-          <a ng-href="/slots/{{slot._id}}" class="group-item" ng-repeat="slot in self.slots">
-            <strong>Start time</strong>: {{ slot.start }} <br />
-
+          <a ng-href="/slots/{{slot._id}}" class="group-item {{slot.color}}" ng-repeat="slot in job.slots | orderBy: 'start'">
+            <strong>Start time</strong>: {{ scheduleCtrl.parseTime(slot.start) }} <br />
+            <strong>End time</strong>: {{ scheduleCtrl.parseTime(slot.end) }} <br />
+            <strong>Still needed</strong>: {{ slot.left }} <br />
+            <strong>Volunteers</strong>: {{ slot.vols }}
           </a>
         </div>
       </ul>
