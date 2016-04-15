@@ -354,11 +354,19 @@ angular.module('ulyssesApp')
       self.success = false;
       self.singleJob = true;
       self.errorMessage = "";
+      self.locations = [];
+      self.newLocations = [];
+      self.locationsToAdd = [];
 
       self.singleJob = true;
       self.jobs = [];
       self.job = Job.get({id: $stateParams.id}, function(results) {
         self.jobs.push(results)
+        results.locations.forEach(function(location) {
+          Location.get({id: location}, function(loc) {
+            self.locations.push(loc);
+          });
+        });
       });
 
       Slot.query({jobID: $stateParams.id }).$promise.then(function(results) {
@@ -371,6 +379,31 @@ angular.module('ulyssesApp')
         console.log("ERROR");
       });
 
+      self.chooseLocation = function() {
+        if(self.locationToChoose) {
+          console.log(self.locationToChoose);
+          self.locations.forEach(function(loc) {
+            if(loc._id == self.locationToChoose) {
+              self.newLocations.push(loc);
+            }
+          });
+          self.locationToChoose = "";
+        }
+      }
+
+      self.removeLocation = function(location) {
+        var index = self.newLocations.indexOf(location);
+        if(index > -1) {
+          self.newLocations.splice(index, 1);
+        }
+      }
+
+      self.areThereLocations = function() {
+        if(self.newLocations) {
+          return self.newLocations.length > 0;
+        }
+      }
+
       self.errorMessage = "You cannot create a time slot for a non-existent job.";
       console.log(self.singleJob)
 
@@ -380,33 +413,49 @@ angular.module('ulyssesApp')
           self.jobtitle = self.job._id;
         }
         if (self.start && self.jobtitle && self.end && self.volunteersNeeded) {
-          if(parseInt(self.start) < parseInt(self.end)) {
-            console.log(self.volunteer);
-            Slot.save({
-              start: self.start,
-              end: self.end,
-              volunteers: [],
-              volunteersNeeded: self.volunteersNeeded,
-              jobID: self.jobtitle,
-              createdBy: Auth.getCurrentUser()._id
-            }, function(results) {
-              results["left"] = results.volunteersNeeded
-              self.data.push(results);
-            });
-            self.error = false;
-            self.jobtitle = "";
-            self.start = "";
-            self.end = "";
-            self.volunteersNeeded = "";
-            self.success = true;
-          } else if(parseInt(self.start) == parseInt(self.end)) {
-            self.error = true;
-            self.success = false;
-            self.errorMessage = "Your start time and end time cannot be the same.";
+          if(self.newLocations.length > 0) {
+            if(parseInt(self.start) < parseInt(self.end)) {
+              console.log(self.volunteer);
+
+              var locs = [];
+              self.newLocations.forEach(function(location) {
+                locs.push(location._id);
+              });
+
+              console.log("locs", locs);
+
+              Slot.save({
+                start: self.start,
+                end: self.end,
+                volunteers: [],
+                locations: locs,
+                volunteersNeeded: self.volunteersNeeded,
+                jobID: self.jobtitle,
+                createdBy: Auth.getCurrentUser()._id
+              }, function(results) {
+                results["left"] = results.volunteersNeeded
+                self.data.push(results);
+              });
+              self.error = false;
+              self.jobtitle = "";
+              self.start = "";
+              self.end = "";
+              self.newLocations = [];
+              self.volunteersNeeded = "";
+              self.success = true;
+            } else if(parseInt(self.start) == parseInt(self.end)) {
+              self.error = true;
+              self.success = false;
+              self.errorMessage = "Your start time and end time cannot be the same.";
+            } else {
+              self.error = true;
+              self.success = false;
+              self.errorMessage = "Your start time and end time are not in chronological order.";
+            }
           } else {
             self.error = true;
             self.success = false;
-            self.errorMessage = "Your start time and end time are not in chronological order.";
+            self.errorMessage = "You must add a location before creating a time slot.";
           }
         } else {
           self.error = true;
