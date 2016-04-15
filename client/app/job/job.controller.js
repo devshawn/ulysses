@@ -209,9 +209,12 @@ angular.module('ulyssesApp')
       }
 
       self.checkForLocationUsage = function(location, callback) {
-        console.log("called");
+        console.log("called")
         var hasCalledBack = false;
         Slot.query({jobID: self.job._id}, function(results) {
+          if(results.length == 0) {
+            callback(false);
+          }
           var i = 0;
           results.forEach(function(slot) {
             // for each slot, search its volunteer for this location
