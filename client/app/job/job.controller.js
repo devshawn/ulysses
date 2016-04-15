@@ -7,6 +7,7 @@ angular.module('ulyssesApp')
     self.success = false;
     self.readOnly = true;
     self.locations = [];
+    self.newLocations = [];
 
     self.isSuccess = function () {
       return self.success;
@@ -19,6 +20,12 @@ angular.module('ulyssesApp')
     self.areThereLocations = function() {
       if(self.locations) {
         return !(self.locations.length == 0);
+      }
+    }
+
+    self.areThereNewLocations = function() {
+      if(self.newLocations) {
+        return !(self.newLocations.length == 0);
       }
     }
 
@@ -196,13 +203,13 @@ angular.module('ulyssesApp')
       self.addLocation = function() {
         console.log("Adding location");
         if(self.location.length >= 1) {
-          self.locations.push({"name" : self.location});
           self.newLocations.push(self.location);
           self.location = "";
         }
       }
 
       self.checkForLocationUsage = function(location, callback) {
+        console.log("called");
         var hasCalledBack = false;
         Slot.query({jobID: self.job._id}, function(results) {
           var i = 0;
@@ -239,9 +246,10 @@ angular.module('ulyssesApp')
       }
 
       self.removeLocation = function(location) {
-        if (self.locations.length > 1) {
+        if (self.locations.length >= 1) {
+            console.log(location);
           if (location._id) {
-
+            console.log(location);
             self.checkForLocationUsage(location, function(results) {
               if(results === true) {
                 $timeout(function() {
@@ -317,6 +325,10 @@ angular.module('ulyssesApp')
         console.log("updating");
         console.log(self.newLocations)
         if(self.job.title.length > 1 && self.job.description.length > 1) {
+          self.locations.forEach(function(location) {
+            Location.update({id: location._id}, {'name' : location.name});
+          });
+
           if(self.newLocations.length >= 1) {
             self.createLocations(self.newLocations, function (data2) {
               console.log("finished");
