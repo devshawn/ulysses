@@ -22,7 +22,6 @@ function onConnect(socket) {
   require('../api/slot/slot.socket').register(socket);
   require('../api/job/job.socket').register(socket);
   require('../api/volunteer/volunteer.socket').register(socket);
-  require('../api/thing/thing.socket').register(socket);
 
 }
 
