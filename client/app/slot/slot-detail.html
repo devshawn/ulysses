@@ -1,7 +1,7 @@
 <div class="slot-container" ng-show="slotCtrl.doesSlotExist()">
   <div class="panel panel-default">
     <div class="panel-heading">Slot Info:
-      <div class="pull-right"><a href="/slots">Back to slot list</a></div>
+      <div class="pull-right"><span ng-show="slotCtrl.isReadOnly()"><a href="" ng-click="slotCtrl.toggleEdit()">Edit Locations</a> | </span><a href="/slots">Back to slot list</a></div>
     </div>
     <div class="panel-body">
       <strong>Job title</strong>: {{ slotCtrl.getJobTitle(slotCtrl.slot.jobID) }} <br />
@@ -12,7 +12,51 @@
     </div>
   </div>
 
-  <div class="panel panel-default">
+  <div class="panel panel-default" ng-hide="slotCtrl.isReadOnly()">
+    <div class="panel-heading">Add locations for this time slot:</div>
+    <div class="panel-body">
+      <div class="form-group">
+        <label for="locations"><strong>Pick a location</strong></label><br />
+        <select id="locations" name="locations" ng-model="slotCtrl.locationToChoose">
+          <option ng-repeat="location in slotCtrl.allLocations" value="{{ location._id }}" >{{ location.name }}</option>
+        </select>
+      </div>
+      <button ng-click="slotCtrl.chooseLocation()" class="btn btn-default">Add Location</button>
+    </div>
+  </div>
+
+  <div class="panel panel-default" ng-hide="slotCtrl.isReadOnly()">
+    <div class="panel-heading">New locations to be added:</div>
+    <div class="list-group">
+      <div class="list-group-item no-padding" style="" ng-repeat="location in slotCtrl.newLocations">
+        <div class="group-item">
+          {{ location.name }}
+        </div>
+        <a ng-click="slotCtrl.removeLocation(location)" ng-href="" class="btn btn-sm btn-danger group-item-remove" style=""><span class="glyphicon glyphicon-trash"></span></a>
+      </div>
+    </div>
+    <div class="panel-body" ng-hide="slotCtrl.areThereNewLocations()">There are currently no locations.</div>
+  </div>
+
+  <div class="panel panel-default" ng-hide="slotCtrl.isReadOnly()">
+    <div class="panel-heading">Current locations for this time slot:</div>
+    <div class="list-group">
+      <div class="list-group-item no-padding" style="" ng-repeat="location in slotCtrl.locations">
+        <div class="group-item">
+          {{ location.name }}
+        </div>
+        <a ng-click="slotCtrl.deleteLocation(location)" ng-href="" class="btn btn-sm btn-danger group-item-remove" style=""><span class="glyphicon glyphicon-trash"></span></a>
+      </div>
+    </div>
+    <div class="panel-body" ng-hide="slotCtrl.areThereLocations()">There are currently no locations.</div>
+  </div>
+
+  <div ng-hide="slotCtrl.isReadOnly()" class="text-center">
+    <button class="btn btn-primary" type="submit" ng-click="slotCtrl.updateSlot()" name="submit">Update Slot</button>
+    <button class="btn btn-danger" type="submit" ng-click="slotCtrl.cancelUpdates()" name="cancel">Cancel Changes</button>
+  </div>
+
+  <div class="panel panel-default" ng-show="slotCtrl.isReadOnly()">
     <div class="panel-heading">Volunteers assigned to this time slot:</div>
     <div class="list-group">
       <div class="list-group-item no-padding" ng-repeat="volunteer in slotCtrl.vols | orderBy: 'lastName'">
@@ -23,7 +67,7 @@
     <div class="panel-body" ng-hide="slotCtrl.areThereAssignees()">There are currently no volunteers assigned to this time slot.</div>
   </div>
 
-  <div class="panel panel-default">
+  <div class="panel panel-default" ng-show="slotCtrl.isReadOnly()">
     <div class="panel-heading">Add a volunteer to this time slot:</div>
     <div class="panel-body" ng-show="slotCtrl.areThereVolunteers()">
       <div class="success" ng-show="slotCtrl.isSuccess()">You have successfully added a volunteer to this time slot.<br /><br /></div>

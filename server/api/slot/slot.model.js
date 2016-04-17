@@ -7,6 +7,7 @@ var SlotSchema = new mongoose.Schema({
   start: Number,
   end: Number,
   volunteers: [],
+  locations: [],
   volunteersNeeded: Number,
   jobID: String,
   createdBy: String

@@ -6,20 +6,67 @@
   <div class="panel-body" ng-show="slotCtrl.canCreate()">
     <div class="success" ng-show="slotCtrl.isSuccess()">You have successfully entered a time slot.<br /><br /></div>
     <div class="warning" ng-show="slotCtrl.isError()">{{ slotCtrl.errorMessage }}<br /><br /></div>
-    <form>
-      <div class="form-group" ng-hide="slotCtrl.isSingleJob()">
-        <label for="jobtitle">Job Title</label><br />
-        <select id="jobtitle" name="jobtitle" ng-model="slotCtrl.jobtitle" required>
-          <option ng-repeat="job in slotCtrl.jobs" value="{{ job._id }}" >{{ job.title }}</option>
-        </select>
-      </div>
-      <div class="form-group" ng-show="slotCtrl.isSingleJob()">
-        <label for="jobtitle">Job Title</label><br />
-          {{ slotCtrl.job.title }}
-      </div>
-      <div class="form-group">
-        <label for="start">Start Time</label><br />
-          <select id="start" name="start" ng-model="slotCtrl.start" required>
+    <div class="col-sm-6">
+      <form>
+        <div class="form-group" ng-hide="slotCtrl.isSingleJob()">
+          <label for="jobtitle">Job Title</label><br />
+          <select id="jobtitle" name="jobtitle" ng-model="slotCtrl.jobtitle" required>
+            <option ng-repeat="job in slotCtrl.jobs" value="{{ job._id }}" >{{ job.title }}</option>
+          </select>
+        </div>
+        <div class="form-group" ng-show="slotCtrl.isSingleJob()">
+          <label for="jobtitle">Job Title</label><br />
+            {{ slotCtrl.job.title }}
+        </div>
+        <div class="form-group">
+          <label for="start">Start Time</label><br />
+            <select id="start" name="start" ng-model="slotCtrl.start" required>
+              <option value="800">8:00 AM</option>
+              <option value="815">8:15 AM</option>
+              <option value="830">8:30 AM</option>
+              <option value="845">8:45 AM</option>
+              <option value="900">9:00 AM</option>
+              <option value="915">9:15 AM</option>
+              <option value="930">9:30 AM</option>
+              <option value="945">9:45 AM</option>
+              <option value="1000">10:00 AM</option>
+              <option value="1015">10:15 AM</option>
+              <option value="1030">10:30 AM</option>
+              <option value="1045">10:45 AM</option>
+              <option value="1100">11:00 AM</option>
+              <option value="1115">11:15 AM</option>
+              <option value="1130">11:30 AM</option>
+              <option value="1145">11:45 AM</option>
+              <option value="1200">12:00 PM</option>
+              <option value="1215">12:15 PM</option>
+              <option value="1230">12:30 PM</option>
+              <option value="1245">12:45 PM</option>
+              <option value="1300">1:00 PM</option>
+              <option value="1315">1:15 PM</option>
+              <option value="1330">1:30 PM</option>
+              <option value="1345">1:45 PM</option>
+              <option value="1400">2:00 PM</option>
+              <option value="1415">2:15 PM</option>
+              <option value="1430">2:30 PM</option>
+              <option value="1445">2:45 PM</option>
+              <option value="1500">3:00 PM</option>
+              <option value="1515">3:15 PM</option>
+              <option value="1530">3:30 PM</option>
+              <option value="1545">3:45 PM</option>
+              <option value="1600">4:00 PM</option>
+              <option value="1615">4:15 PM</option>
+              <option value="1630">4:30 PM</option>
+              <option value="1645">4:45 PM</option>
+              <option value="1700">5:00 PM</option>
+              <option value="1715">5:15 PM</option>
+              <option value="1730">5:30 PM</option>
+              <option value="1745">5:45 PM</option>
+              <option value="1800">6:00 PM</option>
+            </select>
+        </div>
+        <div class="form-group">
+          <label for="end">End Time</label><br />
+          <select id="end" name="end" ng-model="slotCtrl.end" required>
             <option value="800">8:00 AM</option>
             <option value="815">8:15 AM</option>
             <option value="830">8:30 AM</option>
@@ -62,60 +109,39 @@
             <option value="1745">5:45 PM</option>
             <option value="1800">6:00 PM</option>
           </select>
-      </div>
+        </div>
+        <div class="form-group">
+          <label for="volunteersNeeded">Volunteers Needed</label><br />
+          <input type="number" name="volunteersNeeded" id="volunteersNeeded" ng-model="slotCtrl.volunteersNeeded" min="1" max="100">
+        </div>
+        <button type="submit" ng-click="slotCtrl.createSlot()" class="btn btn-default">Create Time Slot</button>
+      </form>
+    </div>
+    <div class="col-sm-6">
       <div class="form-group">
-        <label for="end">End Time</label><br />
-        <select id="end" name="end" ng-model="slotCtrl.end" required>
-          <option value="800">8:00 AM</option>
-          <option value="815">8:15 AM</option>
-          <option value="830">8:30 AM</option>
-          <option value="845">8:45 AM</option>
-          <option value="900">9:00 AM</option>
-          <option value="915">9:15 AM</option>
-          <option value="930">9:30 AM</option>
-          <option value="945">9:45 AM</option>
-          <option value="1000">10:00 AM</option>
-          <option value="1015">10:15 AM</option>
-          <option value="1030">10:30 AM</option>
-          <option value="1045">10:45 AM</option>
-          <option value="1100">11:00 AM</option>
-          <option value="1115">11:15 AM</option>
-          <option value="1130">11:30 AM</option>
-          <option value="1145">11:45 AM</option>
-          <option value="1200">12:00 PM</option>
-          <option value="1215">12:15 PM</option>
-          <option value="1230">12:30 PM</option>
-          <option value="1245">12:45 PM</option>
-          <option value="1300">1:00 PM</option>
-          <option value="1315">1:15 PM</option>
-          <option value="1330">1:30 PM</option>
-          <option value="1345">1:45 PM</option>
-          <option value="1400">2:00 PM</option>
-          <option value="1415">2:15 PM</option>
-          <option value="1430">2:30 PM</option>
-          <option value="1445">2:45 PM</option>
-          <option value="1500">3:00 PM</option>
-          <option value="1515">3:15 PM</option>
-          <option value="1530">3:30 PM</option>
-          <option value="1545">3:45 PM</option>
-          <option value="1600">4:00 PM</option>
-          <option value="1615">4:15 PM</option>
-          <option value="1630">4:30 PM</option>
-          <option value="1645">4:45 PM</option>
-          <option value="1700">5:00 PM</option>
-          <option value="1715">5:15 PM</option>
-          <option value="1730">5:30 PM</option>
-          <option value="1745">5:45 PM</option>
-          <option value="1800">6:00 PM</option>
+        <label for="locations"><strong>Add locations to this time slot</strong></label><br />
+        <select id="locations" name="locations" ng-model="slotCtrl.locationToChoose">
+          <option ng-repeat="location in slotCtrl.locations" value="{{ location._id }}" >{{ location.name }}</option>
         </select>
       </div>
-      <div class="form-group">
-        <label for="volunteersNeeded">Volunteers Needed</label><br />
-        <input type="number" name="volunteersNeeded" id="volunteersNeeded" ng-model="slotCtrl.volunteersNeeded" min="1" max="100">
-      </div>
-      <button type="submit" ng-click="slotCtrl.createSlot()" class="btn btn-default">Create Time Slot</button>
-    </form>
+      <button ng-click="slotCtrl.chooseLocation()" class="btn btn-default">Add Location</button>
+    </div>
   </div>
+</div>
+
+<br />
+
+<div class="panel panel-default slot-container">
+  <div class="panel-heading">Locations for this time slot:</div>
+  <div class="list-group">
+    <div class="list-group-item no-padding" style="" ng-repeat="location in slotCtrl.newLocations">
+      <div class="group-item">
+        {{ location.name }}
+      </div>
+      <a ng-click="slotCtrl.removeLocation(location)" ng-href="" class="btn btn-sm btn-danger group-item-remove" style=""><span class="glyphicon glyphicon-trash"></span></a>
+    </div>
+  </div>
+  <div class="panel-body" ng-hide="slotCtrl.areThereLocations()">There are currently no locations.</div>
 </div>
 
 <br />

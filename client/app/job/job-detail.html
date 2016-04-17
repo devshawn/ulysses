@@ -30,7 +30,7 @@
     </div>
   </div>
 
-  <div class="panel panel-default">
+  <div class="panel panel-default" ng-show="jobCtrl.isReadOnly()">
     <div class="panel-heading">Locations for this job:</div>
     <div class="list-group">
       <div class="list-group-item no-padding" style="" ng-repeat="location in jobCtrl.locations">
@@ -39,6 +39,30 @@
       </div>
     </div>
     <div class="panel-body" ng-hide="jobCtrl.areThereLocations()">There are currently no locations defined for this job.</div>
+  </div>
+
+  <div class="panel panel-default" ng-hide="jobCtrl.isReadOnly()">
+    <div class="panel-heading">New locations for this job:</div>
+    <div class="list-group">
+      <div class="list-group-item no-padding" style="" ng-repeat="location2 in jobCtrl.newLocations">
+        <div class="group-item">{{ location2 }}</div>
+        <a ng-click="jobCtrl.removeLocation(location2)" ng-href="" class="btn btn-sm btn-danger group-item-remove" style=""><span class="glyphicon glyphicon-trash"></span></a>
+      </div>
+    </div>
+    <div class="panel-body" ng-hide="jobCtrl.areThereNewLocations()">There are currently no new locations defined for this job.</div>
+  </div>
+
+  <div class="panel panel-default"  ng-hide="jobCtrl.isReadOnly()">
+    <div class="panel-heading">Edit Locations:</div>
+    <div class="list-group">
+      <div class="list-group-item no-padding" style="" ng-repeat="location3 in jobCtrl.locations">
+        <div class="group-item">
+          <input type="text" style="width: 30%;" class="form-control" id="description" ng-model="location3.name">
+        </div>
+        <a ng-click="jobCtrl.removeLocation(location3)" ng-href="" class="btn btn-sm btn-danger group-item-remove" style=""><span class="glyphicon glyphicon-trash"></span></a>
+      </div>
+    </div>
+    <div class="panel-body" ng-hide="jobCtrl.areThereLocations()">There are currently no locations to edit.</div>
   </div>
 
   <div class="panel panel-default">

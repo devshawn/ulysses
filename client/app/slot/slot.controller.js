@@ -119,6 +119,7 @@ angular.module('ulyssesApp')
       }
     }
 
+
     self.removeSlot = function (slot) {
       if (confirm("Are you sure you want to delete? This will remove all volunteers from this time slot.")) {
         console.log("Deleting");
@@ -174,19 +175,113 @@ angular.module('ulyssesApp')
     } else if ($state.current.name == "slot-detail") {
       self.vols = [];
       self.exists = false;
+      self.allLocations = [];
+      self.locations = [];
+      self.newLocations = [];
+      self.readOnly = true;
+      self.toDelete = [];
+
+      self.isReadOnly = function() {
+        return self.readOnly;
+      }
+
+      self.cancelUpdates = function() {
+        $state.reload();
+      }
+
+      self.updateSlot = function() {
+        console.log("updating");
+        var data = self.slot.locations;
+        self.toDelete.forEach(function(location) {
+          var index = data.indexOf(location);
+          if(index > -1) {
+            data.splice(index, 1);
+          }
+        });
+
+        self.newLocations.forEach(function(location) {
+          data.push(location._id);
+        });
+
+        Slot.update({id: self.slot._id}, {'locations' : data});
+
+
+        self.toggleEdit();
+        self.allLocations = [];
+        self.newLocations = [];
+        $state.reload();
+      }
+
+      self.chooseLocation = function() {
+        if(self.locationToChoose) {
+          var push = true;
+          self.newLocations.forEach(function(loc) {
+            if(self.locationToChoose == loc._id) {
+              push = false;
+              console.log("in");
+            }
+          });
+
+          self.locations.forEach(function(loc) {
+            if(self.locationToChoose == loc._id) {
+              push = false;
+              console.log("in2");
+            }
+          });
+
+          self.allLocations.forEach(function(loc) {
+            if(loc._id == self.locationToChoose && push) {
+              self.newLocations.push(loc);
+            }
+          });
+          self.locationToChoose = "";
+        }
+      }
+
+      self.deleteLocation = function(location) {
+        var canDelete = true;
+        self.vols.forEach(function(vol) {
+          vol.locations.forEach(function(loc) {
+            if(loc.locationID == location._id) {
+              canDelete = false;
+            }
+          })
+        })
+        console.log("deleting", location)
+        if(canDelete) {
+          var index = self.locations.indexOf(location);
+          if(index > -1) {
+            self.locations.splice(index, 1);
+          }
+          self.toDelete.push(location._id);
+        } else {
+          alert("You cannot remove a location that is assigned to a volunteer.");
+        }
+
+      }
+
+      self.toggleEdit = function() {
+        self.readOnly = !self.readOnly;
+      }
+
+      self.areThereLocations = function() {
+        return self.locations.length > 0;
+      }
+
+      self.areThereNewLocations = function() {
+        return self.newLocations.length > 0;
+      }
 
       self.getLocations = function(response, callback) {
-        Job.get({id: response.jobID}, function(results) {
-          var locs = results.locations;
-          var inc = 0;
-          locs.forEach(function(location) {
-            Location.get({id: location}, function(results2) {
-              inc++;
-              self.locations.push(results2);
-              if(inc == locs.length) {
-                callback();
-              }
-            });
+        var locs = response.locations;
+        var inc = 0;
+        locs.forEach(function(location) {
+          Location.get({id: location}, function(results2) {
+            inc++;
+            self.locations.push(results2);
+            if(inc == locs.length) {
+              callback();
+            }
           });
         });
       }
@@ -194,6 +289,18 @@ angular.module('ulyssesApp')
       self.slot = Slot.get({id: $stateParams.id}, function (response) {
         self.exists = true;
         self.slot["left"] = self.slot.volunteersNeeded - self.slot.volunteers.length;
+        Job.get({id: self.slot.jobID}, function(results2) {
+          Location.query({}, function(results) {
+            results2.locations.forEach(function(loc) {
+              results.forEach(function(location) {
+                if(location._id == loc) {
+                  self.allLocations.push(location);
+                }
+              });
+            });
+          });
+        });
+
 
         self.getLocations(response, function() {
           var vols = self.slot.volunteers;
@@ -354,11 +461,19 @@ angular.module('ulyssesApp')
       self.success = false;
       self.singleJob = true;
       self.errorMessage = "";
+      self.locations = [];
+      self.newLocations = [];
+      self.locationsToAdd = [];
 
       self.singleJob = true;
       self.jobs = [];
       self.job = Job.get({id: $stateParams.id}, function(results) {
         self.jobs.push(results)
+        results.locations.forEach(function(location) {
+          Location.get({id: location}, function(loc) {
+            self.locations.push(loc);
+          });
+        });
       });
 
       Slot.query({jobID: $stateParams.id }).$promise.then(function(results) {
@@ -371,6 +486,37 @@ angular.module('ulyssesApp')
         console.log("ERROR");
       });
 
+      self.chooseLocation = function() {
+        if(self.locationToChoose) {
+          var push = true;
+          self.newLocations.forEach(function(loc) {
+            if(self.locationToChoose == loc._id) {
+              push = false;
+            }
+          });
+
+          self.locations.forEach(function(loc) {
+            if(loc._id == self.locationToChoose && push) {
+              self.newLocations.push(loc);
+            }
+          });
+          self.locationToChoose = "";
+        }
+      }
+
+      self.removeLocation = function(location) {
+        var index = self.newLocations.indexOf(location);
+        if(index > -1) {
+          self.newLocations.splice(index, 1);
+        }
+      }
+
+      self.areThereLocations = function() {
+        if(self.newLocations) {
+          return self.newLocations.length > 0;
+        }
+      }
+
       self.errorMessage = "You cannot create a time slot for a non-existent job.";
       console.log(self.singleJob)
 
@@ -380,33 +526,49 @@ angular.module('ulyssesApp')
           self.jobtitle = self.job._id;
         }
         if (self.start && self.jobtitle && self.end && self.volunteersNeeded) {
-          if(parseInt(self.start) < parseInt(self.end)) {
-            console.log(self.volunteer);
-            Slot.save({
-              start: self.start,
-              end: self.end,
-              volunteers: [],
-              volunteersNeeded: self.volunteersNeeded,
-              jobID: self.jobtitle,
-              createdBy: Auth.getCurrentUser()._id
-            }, function(results) {
-              results["left"] = results.volunteersNeeded
-              self.data.push(results);
-            });
-            self.error = false;
-            self.jobtitle = "";
-            self.start = "";
-            self.end = "";
-            self.volunteersNeeded = "";
-            self.success = true;
-          } else if(parseInt(self.start) == parseInt(self.end)) {
-            self.error = true;
-            self.success = false;
-            self.errorMessage = "Your start time and end time cannot be the same.";
+          if(self.newLocations.length > 0) {
+            if(parseInt(self.start) < parseInt(self.end)) {
+              console.log(self.volunteer);
+
+              var locs = [];
+              self.newLocations.forEach(function(location) {
+                locs.push(location._id);
+              });
+
+              console.log("locs", locs);
+
+              Slot.save({
+                start: self.start,
+                end: self.end,
+                volunteers: [],
+                locations: locs,
+                volunteersNeeded: self.volunteersNeeded,
+                jobID: self.jobtitle,
+                createdBy: Auth.getCurrentUser()._id
+              }, function(results) {
+                results["left"] = results.volunteersNeeded
+                self.data.push(results);
+              });
+              self.error = false;
+              self.jobtitle = "";
+              self.start = "";
+              self.end = "";
+              self.newLocations = [];
+              self.volunteersNeeded = "";
+              self.success = true;
+            } else if(parseInt(self.start) == parseInt(self.end)) {
+              self.error = true;
+              self.success = false;
+              self.errorMessage = "Your start time and end time cannot be the same.";
+            } else {
+              self.error = true;
+              self.success = false;
+              self.errorMessage = "Your start time and end time are not in chronological order.";
+            }
           } else {
             self.error = true;
             self.success = false;
-            self.errorMessage = "Your start time and end time are not in chronological order.";
+            self.errorMessage = "You must add a location before creating a time slot.";
           }
         } else {
           self.error = true;

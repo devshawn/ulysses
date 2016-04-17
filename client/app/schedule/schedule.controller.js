@@ -20,14 +20,54 @@ angular.module('ulyssesApp')
 
     if($state.current.name == "schedule") {
       self.slotMode = true;
-      self.jobs = Job.query({}, function(results) {
-        self.width = ((100 / results.length)) + "%";
-        results.forEach(function(job) {
-          Slot.query({"jobID" : job._id}, function(results2) {
-            self.slots.push({"jobID" : job._id, "slots" : results2});
+
+      Volunteer.query({}, function(vols) {
+        self.ourVolunteers = [];
+        vols.forEach(function(vol) {
+          self.ourVolunteers.push({'id' : vol._id, 'vol' : vol});
+        });
+
+        Job.query({}, function(results) {
+          self.width = ((100 / (results.length))) + "%";
+          Slot.query({}, function(slots) {
+            results.forEach(function(job, index, theArray) {
+              slots.forEach(function(slot, i, slotsArray) {
+                if(slot.jobID == job._id) {
+                  slotsArray[i].vols = "None";
+                  slotsArray[i].left = slot.volunteersNeeded - slot.volunteers.length;
+                  if(slotsArray[i].left / slotsArray[i].volunteersNeeded >= 0.5) {
+                    slotsArray[i].color = "color-red";
+                  } else {
+
+                  }
+                  slot.volunteers.forEach(function(vol) {
+                    self.ourVolunteers.forEach(function(newVol) {
+                      if(newVol.id == vol) {
+                        console.log(newVol);
+                        if(slotsArray[i].vols == "None") {
+                          slotsArray[i].vols = newVol.vol.firstName + " " + newVol.vol.lastName;
+                        } else {
+                          slotsArray[i].vols += ", " + newVol.vol.firstName + " " + newVol.vol.lastName;
+                        }
+                      }
+                    });
+                  });
+
+                  if(!theArray[index].slots) {
+                    theArray[index].slots = [slot];
+                  } else {
+                    theArray[index].slots.push(slot);
+                  }
+                }
+              });
+            });
+            console.log(results);
+            self.jobs = results;
           });
         });
       });
+
+
     } else {
       self.slotMode = false;
       self.jobs = Job.query({}, function(results) {
@@ -157,6 +197,7 @@ angular.module('ulyssesApp')
     }
 
     self.parseTime = function(time) {
+      console.log("Called");
       if(time) {
         var strTime = "";
         if(time >= 1300) {

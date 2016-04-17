@@ -61,7 +61,7 @@ function handleError(res, statusCode) {
 
 // Gets a list of Locations
 export function index(req, res) {
-  Location.findAsync()
+  Location.findAsync(req.query)
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
