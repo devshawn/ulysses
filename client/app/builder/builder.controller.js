@@ -139,8 +139,35 @@ angular.module('ulyssesApp')
               // call generate schedule here
               //console.log("Volunteers: ", volunteers);
               //console.log("Slots: ", results);
+              var arr = self.prettyMakeSchedule(slots, volunteers);
+              console.log(arr)
+              console.log(arr.length);
+              var final = [];
 
-              console.log(self.prettyMakeSchedule(slots, volunteers))
+              for(var i = 0; i < arr.length; i++) {
+                if(i == 0) {
+                  final.push(arr[i]);
+                  console.log("A");
+                } else {
+                  var toAdd = false;
+                  final.forEach(function(element) {
+                    if(element.slotID == arr[i].slotID && element.volunteerID == arr[i].volunteerID) {
+                        console.log("true");
+                        toAdd = true;
+                    } else {
+                        console.log("false");
+                    }
+                  });
+                  if(!toAdd) {
+                    final.push(arr[i]);
+                  }
+                  //toAdd.forEach(function(element) {
+                  //  final.push(element);
+                  //});
+                }
+              }
+
+              console.log(final);
             });
           });
         });
