@@ -62,6 +62,10 @@ angular.module('ulyssesApp')
         if(confirm("Are you sure you want to delete? This will delete all time slots associated with this job.")) {
           console.log("Deleting");
 
+          job.locations.forEach(function(location) {
+            Location.remove({id: location});
+          });
+
           Slot.query({jobID: job._id}, function(results) {
             var slots = results;
             var test = [];
