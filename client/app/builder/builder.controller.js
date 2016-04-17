@@ -193,8 +193,8 @@ angular.module('ulyssesApp')
       var j = 0;
       while(i++<s.length-1){
           while(j++<s[i].commitments.length-1) {
-            console.log({'volunteerID':s[i].volunteerID,'slotID':s[i].commitments[j].slotID});
-            b.push({'volunteerID':s[i].volunteerID,'slotID':s[i].commitments[j].slotID});
+            console.log({'volunteerID':s[i]._id,'slotID':s[i].commitments[j].slotID});
+            b.push({'volunteerID':s[i]._id,'slotID':s[i].commitments[j].slotID});
       }
        // console.log("and here");
       //console.log(b);
