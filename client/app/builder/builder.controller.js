@@ -165,55 +165,76 @@ angular.module('ulyssesApp')
 
 
     self.prettyMakeSchedule=function(slots,volunteers){
-      return self.prettifyOutput(self.makeSchedules(self.slotsToJobs(slots),volunteers),1000);
+      return self.prettifyOutput(self.makeSchedules(self.slotsToJobs(slots),volunteers,1000));
     }
 
 
-    self.slotsToJobs = function(arrayOfSlots){
+    self.slotsToJobs = function(arrayOfSlots) {
+      console.log(arrayOfSlots);
       var b = [];
-      return arrayOfSlots.reduce(function(a,b){
-        var i=a.volunteersNeeded;
-        while(i-->0){b.push({'volunteerID':a.volunteerID,'start':a.start,'end':a.end});}
-        return b;
-      });}
+      var i = 0;
+      while (i++ < arrayOfSlots.length-1) {
+        console.log(arrayOfSlots[i]);
+        console.log(arrayOfSlots[i].volunteersNeeded);
+        var j = 0;
+        while (j++ < arrayOfSlots[i].volunteersNeeded-1) {
+          b.push({'slotID': arrayOfSlots[i].jobID, 'start': arrayOfSlots[i].start, 'end': arrayOfSlots[i].end});
+          console.log("yay success");
+        }
+      }
+      return b;
+    }
 
     self.prettifyOutput = function(schedules){
+      console.log(schedules);
+      var s = schedules.schedule;
       var b = [];
-      return schedules.reduce(function(a,b){
-        a.commitments.forEach(function(x){
-          b.push({'volunteerID':a.volunteerID,'slotID':x.slodID});
-        })
-        return b;
-      })
+      var i = 0;
+      var j = 0;
+      while(i++<s.length-1){
+          while(j++<s[i].commitments.length-1) {
+            console.log({'volunteerID':s[i].volunteerID,'slotID':s[i].commitments[j].slotID});
+            b.push({'volunteerID':s[i].volunteerID,'slotID':s[i].commitments[j].slotID});
+      }
+       // console.log("and here");
+      //console.log(b);
+    }
+    return b;
     }
 
     self.makeSchedules = function(jobs,volunteers,n){
+      console.log("generating MANY schedules");
       var i=0;
       var best={'schedule':[],'unassigned':[],'score':999999999999999};
       while(i++<n){
         var temp = self.generateSchedule(jobs,volunteers);
         if(temp.score<best.score){
           best=temp;
+          console.log("you suck at programming");
+        //  console.log(best);
         }
       }
+
       return best;
     }
 
     self.generateSchedule = function(jobs,volunteers){
-      var j = jobs;
-      var v = volunteers;
-      var unassigned = j.reduce(function(a,b){
-        if(!(self.addJobToVolunteer(b,v))){
-          a.push(b);
-        }
-        return a;
-      });
+    //  console.log("generating a schedule");
+      var j = self.shuffleArray(jobs);
+      var v = self.shuffleArray(volunteers);
+    //  console.log("finished shuffling");
+      var unassigned = [];
+      var i=0;
+      while(i++<j.length-1) {
+   //     console.log("fuck reduce");
+        if(!(self.addJobToVolunteer(j[i],v))){unassigned.push(j[i]);}
+      }
       return {'schedule':v,'unassigned':unassigned,'score':(self.rateSchedule(v)+unassigned.length*5)};
     }
 
     self.addJobToVolunteer = function(job,volunteers){
       var i = 0;
-      while(i++<volunteers.length){
+      while(i++<volunteers.length-1){
         var v = volunteers.shift();
         if(self.canInsert(job.start,job.end,v.commitments)){
           v.commitments.push(job);
@@ -228,6 +249,7 @@ angular.module('ulyssesApp')
 
     //array->array
     self.shuffleArray = function(arr) {
+    //  console.log("shuffling, every day");
       var temp;
       var rand;
       for (var i = 0; i < arr.length; i++) {
@@ -240,14 +262,23 @@ angular.module('ulyssesApp')
     }
 
     self.canInsert = function(start,end,commitments){
-      return commitments.reduce(function(x,y){return x&&(((start>y.start)&&(end>y.end))||((start<y.start)&&(end<y.end)));});
+   //   console.log("canInserting?");
+      var i = 0;
+      var b = true;
+      while(i++<commitments.length-1){
+        var y=commitments[i];
+        b=b&&(((start>y.start)&&(end>y.end))||((start<y.start)&&(end<y.end)));
+        }
+      return b;
     }
 
     self.rateSchedule = function(schedule) {
+   //   console.log("ratingSchedule");
       var score = 0;
       for(var i = 0; i < schedule.length; i++){
         score = score + self.personMetric(schedule[i]);
       }
+   //   console.log("rated at: "+score);
       return score;
     }
 
