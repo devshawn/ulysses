@@ -165,22 +165,29 @@ angular.module('ulyssesApp')
 
     //array,array->array
     self.prettyMakeSchedule=function(slots,volunteers){
-      return self.prettifyOutput(self.makeSchedules(self.slotsToJobs(slots),self.addNewCommitments(volunteers),1000));
+      console.log(slots.length);
+      return self.prettifyOutput(
+                self.makeSchedules(
+                  self.slotsToJobs(slots),
+                  self.addNewCommitments(volunteers),
+                  1000));
     }
 
     //array slots->array slots
     self.slotsToJobs = function(arrayOfSlots) {
       //console.log(arrayOfSlots);
       var b = [];
+      console.log(arrayOfSlots.length);
       for(var i=0;i<arrayOfSlots.length;i++){
         //console.log(arrayOfSlots[i]);
         //console.log(arrayOfSlots[i].volunteersNeeded);
         var j = 0;
         for(var j=0;j<arrayOfSlots[i].volunteersNeeded;j++){
           b.push({'slotID': arrayOfSlots[i].jobID, 'start': arrayOfSlots[i].start, 'end': arrayOfSlots[i].end});
-         // console.log("yay success");
+         //console.log("yay success");
         }
       }
+      console.log(b.length);
       return b;
     }
 
@@ -189,20 +196,25 @@ angular.module('ulyssesApp')
       //console.log(schedules);
       var s = schedules.schedule;
       var b = [];
+      var n = 0;
       for(var i=0;i<s.length;i++){
         for(var j=0;j<s[i].newCommitments.length;j++){
+            n++
             //console.log({'volunteerID':s[i]._id,'slotID':s[i].newCommitments[j].slotID});
             b.push({'volunteerID':s[i]._id,'slotID':s[i].newCommitments[j].slotID});
       }
         //console.log("and here");
         //console.log(b);
     }
+      console.log("n is: "+n);
+      console.log(b.length);
     return b;
     }
 
     //array,array,int->{array array int}
     self.makeSchedules = function(jobs,volunteers,n){
       //console.log("generating MANY schedules");
+      console.log(jobs.length);
       var i=0;
       var best={'schedule':[],'unassigned':[],'score':9999999999999999999};
       for(var i=0;i<n;i++){
@@ -213,7 +225,7 @@ angular.module('ulyssesApp')
           //console.log(best);
         }
       }
-
+      console.log(jobs.length);
       return best;
     }
 
@@ -228,7 +240,7 @@ angular.module('ulyssesApp')
       var i=0;
       for(var i=0;i<j.length;i++){
        // console.log("fuck reduce");
-        if(!(self.addJobToVolunteer(j[i],v))){unassigned.push(j[i]);}
+        if(!(self.addJobToVolunteer(j[i],v))){unassigned.push(j[i]);console.log("added job: " + i);}
       }
       return {'schedule':v,'unassigned':unassigned,'score':(self.rateSchedule(v)+unassigned.length*5)};
     }
@@ -240,6 +252,7 @@ angular.module('ulyssesApp')
         if(self.canInsert(job.start,job.end,v.commitments.concat(v.newCommitments))){
           v.newCommitments.push(job);
           volunteers.push(v);
+          //console.log("while adding job: " + volunteers);
           return true;
         }else{
           volunteers.push(v);
@@ -268,6 +281,7 @@ angular.module('ulyssesApp')
         arr[i] = arr[rand];
         arr[rand] = temp;
       }
+      //console.log(arr.length);
       return arr;
     }
 
@@ -280,6 +294,7 @@ angular.module('ulyssesApp')
         var y=commitments[i];
         b=b&&(((start>y.start)&&(end>y.end))||((start<y.start)&&(end<y.end)));
         }
+    //  console.log("while canInserting: " + commitments.length);
       return b;
     }
 
