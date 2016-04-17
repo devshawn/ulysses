@@ -103,80 +103,206 @@ angular.module('ulyssesApp')
         var volunteers;
         Volunteer.query({}, function(results) {
           volunteers = results;
-          volunteers = volunteers.filter(checkChild);
 
           // next, loop through volunteers and check for team conflicts
           Team.query({}, function(teams) {
             volunteers.forEach(function(vol, i, theVolArray) {
               vol.commitments = [];
-              // create array of child team / division stuff to look through
-              var array = vol.childTeam.split(',');
-              array.forEach(function(item, index, theArray) {
-                item = item.trim();
-                item = item.replace(/^#/, '');
-                var memberNumber = item.split(' ')[0];
-                var problemNumber = item.split(' ')[1].split('/')[0];
-                var divisionNumber = romanize(item.split(' ')[1].split('/')[1]);
-                theArray[index] = {'member' : memberNumber, 'problem' : problemNumber, 'division' : divisionNumber};
-              });
-
-              // loop through each value in the array and check for a team conflict
-              array.forEach(function(item) {
-                teams.forEach(function(team) {
-                  if(team.problem == item.problem && team.division == item.division && team.teamNumber == item.member) {
-                    var startTime = subtract15Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
-                    var endTime = add45Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
-                    //console.log("Old: ", team.longTime, "new: ", longTime);
-                    vol.commitments.push({'start' : startTime, 'end' : endTime});
-                  }
+              if(vol.childTeam.length > 0) {
+                // create array of child team / division stuff to look through
+                var array = vol.childTeam.split(',');
+                array.forEach(function(item, index, theArray) {
+                  item = item.trim();
+                  item = item.replace(/^#/, '');
+                  var memberNumber = item.split(' ')[0];
+                  var problemNumber = item.split(' ')[1].split('/')[0];
+                  var divisionNumber = romanize(item.split(' ')[1].split('/')[1]);
+                  theArray[index] = {'member' : memberNumber, 'problem' : problemNumber, 'division' : divisionNumber};
                 });
-              });
 
-              //console.log(array);
-              theVolArray[i] = vol;
-            });
-            Slot.query({}, function(slots) {
-              // call generate schedule here
-              //console.log("Volunteers: ", volunteers);
-              //console.log("Slots: ", results);
-              var arr = self.prettyMakeSchedule(slots, volunteers);
-              console.log(arr)
-              console.log(arr.length);
-              var final = [];
+                // loop through each value in the array and check for a team conflict
+                array.forEach(function(item) {
+                  teams.forEach(function(team) {
+                    if(team.problem == item.problem && team.division == item.division && team.teamNumber == item.member) {
+                      var startTime = subtract15Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+                      var endTime = add45Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
 
-              for(var i = 0; i < arr.length; i++) {
-                if(i == 0) {
-                  final.push(arr[i]);
-                  console.log("A");
-                } else {
-                  var toAdd = false;
-                  final.forEach(function(element) {
-                    if(element.slotID == arr[i].slotID && element.volunteerID == arr[i].volunteerID) {
-                        console.log("true");
-                        toAdd = true;
-                    } else {
-                        console.log("false");
+                      if(startTime < 600) {
+                        startTime += 1200;
+                      }
+
+                      if(endTime < 600) {
+                        endTime += 1200;
+                      }
+
+                      //console.log("Old: ", team.longTime, "new: ", longTime);
+                      vol.commitments.push({'start' : startTime, 'end' : endTime});
                     }
                   });
-                  if(!toAdd) {
-                    final.push(arr[i]);
-                  }
-                  //toAdd.forEach(function(element) {
-                  //  final.push(element);
-                  //});
-                }
-              }
+                });
 
-              console.log(final);
+                //console.log(array);
+                theVolArray[i] = vol;
+              }
+            });
+
+            volunteers.sort(function(a, b) {
+              return b.commitments.length - a.commitments.length;
+            });
+
+            Slot.query({}, function(slots) {
+              // call generate schedule here
+              console.log("Volunteers: ", volunteers);
+              console.log("Slots: ", slots);
+
+              // final datastructure of volunteers assigned to time slots
+              var final = [];
+
+              // duplicate slots based on volunteers left to be added
+              var totalSlots = [];
+              slots.forEach(function(slot) {
+                for(var i = 0; i < (slot.volunteersNeeded - slot.volunteers.length); i++) {
+                  totalSlots.push(slot);
+                }
+              });
+              console.log("Duped slots: ", totalSlots);
+
+              volunteers.forEach(function(volunteer) {
+                if(totalSlots.length > 0) {
+                  if(volunteer.commitments.length > 0) {
+                    // if we have commitments
+                    if(volunteer._id != "") {
+                      //console.log(totalSlots[0]);
+                      console.log(volunteer.commitments)
+                      var slotToAdd = self.findSlot(totalSlots, volunteer.commitments);
+                      console.log("SLOT TO ADD", slotToAdd);
+                      if(slotToAdd) {
+                        final.push({'volunteerID' : volunteer._id, 'slotID' : slotToAdd._id,  'locationID' : slotToAdd.locations[0]});
+                        var index = -1;
+                        totalSlots.forEach(function(slot, i) {
+                          if(slot._id == slotToAdd._id) {
+                            index = i;
+                          }
+                        });
+                        if(index > -1) {
+                          totalSlots.splice(index, 1);
+                        }
+                      } else {
+                        console.log("skipped over", volunteer._id);
+                      }
+                    }
+
+                  } else {
+                    // no commitments
+                    final.push({'volunteerID' : volunteer._id, 'slotID' : totalSlots[0]._id, 'locationID' : totalSlots[0].locations[0]});
+                    totalSlots.splice(0, 1);
+                  }
+                }
+              });
+              console.log("Final schedule: ", final);
+
+              // now, add volunteers to slots.
+              final.sort(function(a, b) {
+                return b.slotID > a.slotID;
+              });
+              // now, add volunteers to slots.
+              slots.sort(function(a, b) {
+                return b._id > a._id;
+              });
+
+              var organizedSlots = [];
+
+              slots.forEach(function(slot) {
+                organizedSlots.push(final.slice(0, (slot.volunteersNeeded - slot.volunteers.length)));
+                final.splice(0, (slot.volunteersNeeded - slot.volunteers.length));
+              });
+
+              console.log("Organized: ", organizedSlots);
+
+              // loop through organized slots
+              organizedSlots.forEach(function(slot) {
+                var volunteers = [];
+                slot.forEach(function(minislot) {
+                  volunteers.push(minislot.volunteerID);
+                  var locations = [];
+                  locations.push({'slotID' : minislot.slotID, 'locationID' : minislot.locationID});
+                  Volunteer.update({id: minislot.volunteerID}, {'slots' : [minislot.slotID], 'locations' : locations});
+                });
+                Slot.update({id: slot[0].slotID}, {'volunteers' : volunteers});
+
+              });
             });
           });
         });
-
-        // do slots
-        Slot.query({}, function(results) {
-
-        });
       }
+    }
+
+    self.findSlot = function(totalSlots, commitments) {
+      var toReturn = [];
+      totalSlots.forEach(function(slot) {
+        var foundConflict = false;
+        commitments.forEach(function(commitment) {
+          if(self.isConflict(slot, commitment)) {
+            //console.log("FOUND CONFLICT");
+            foundConflict = true;
+          }
+        });
+        if(!foundConflict && toReturn.length == 0) {
+          toReturn.push(slot);
+        }
+      });
+
+      if(toReturn.length > 0) {
+        return toReturn[0];
+      } else {
+        return false;
+      }
+    }
+
+      //checks to see if two time slots overlap
+    self.isConflict = function(slot, commitment) {
+      var start1 = parseInt(slot.start);
+      var end1 = parseInt(slot.end);
+      var start2 = parseInt(commitment.start);
+      var end2 = parseInt(commitment.end);
+      if((start1 <= start2 && start2 <= end1)) {
+        return true;
+      }
+      else if(start2 <= start1 && start1 <= end2) {
+        return true;
+      }
+      else if(start1 == start2 && end1 == end2)
+      {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    self.conflictLoop = function(slot1, volunteerid, callback) {
+      console.log("test");
+      Volunteer.get({id: volunteerid }, function(results) {
+        var hasCalledBack = false;
+        for(var i = 0; i < results.slots.length; i++)
+        {
+          Slot.get({id: results.slots[i]}, function(results1) {
+            console.log(results1);
+            if(self.isConflict(slot1, results1))
+            {
+              callback(true);
+              hasCalledBack = true;
+            } else if(i == results.slots.length) {
+              if(!hasCalledBack) {
+                callback(false);
+              }
+            }
+          });
+        }
+
+        if(results.slots.length == 0) {
+          callback(false);
+        }
+      });
     }
 
     //person structure {'commitments':[]}
@@ -192,29 +318,22 @@ angular.module('ulyssesApp')
 
     //array,array->array
     self.prettyMakeSchedule=function(slots,volunteers){
-      console.log(slots.length);
-      return self.prettifyOutput(
-                self.makeSchedules(
-                  self.slotsToJobs(slots),
-                  self.addNewCommitments(volunteers),
-                  1000));
+      return self.prettifyOutput(self.makeSchedules(self.slotsToJobs(slots),self.addNewCommitments(volunteers),1000));
     }
 
     //array slots->array slots
     self.slotsToJobs = function(arrayOfSlots) {
       //console.log(arrayOfSlots);
       var b = [];
-      console.log(arrayOfSlots.length);
       for(var i=0;i<arrayOfSlots.length;i++){
         //console.log(arrayOfSlots[i]);
         //console.log(arrayOfSlots[i].volunteersNeeded);
         var j = 0;
         for(var j=0;j<arrayOfSlots[i].volunteersNeeded;j++){
           b.push({'slotID': arrayOfSlots[i].jobID, 'start': arrayOfSlots[i].start, 'end': arrayOfSlots[i].end});
-         //console.log("yay success");
+         // console.log("yay success");
         }
       }
-      console.log(b.length);
       return b;
     }
 
@@ -223,25 +342,20 @@ angular.module('ulyssesApp')
       //console.log(schedules);
       var s = schedules.schedule;
       var b = [];
-      var n = 0;
       for(var i=0;i<s.length;i++){
         for(var j=0;j<s[i].newCommitments.length;j++){
-            n++
             //console.log({'volunteerID':s[i]._id,'slotID':s[i].newCommitments[j].slotID});
             b.push({'volunteerID':s[i]._id,'slotID':s[i].newCommitments[j].slotID});
       }
         //console.log("and here");
         //console.log(b);
     }
-      console.log("n is: "+n);
-      console.log(b.length);
     return b;
     }
 
     //array,array,int->{array array int}
     self.makeSchedules = function(jobs,volunteers,n){
       //console.log("generating MANY schedules");
-      console.log(jobs.length);
       var i=0;
       var best={'schedule':[],'unassigned':[],'score':9999999999999999999};
       for(var i=0;i<n;i++){
@@ -252,7 +366,7 @@ angular.module('ulyssesApp')
           //console.log(best);
         }
       }
-      console.log(jobs.length);
+
       return best;
     }
 
@@ -267,7 +381,7 @@ angular.module('ulyssesApp')
       var i=0;
       for(var i=0;i<j.length;i++){
        // console.log("fuck reduce");
-        if(!(self.addJobToVolunteer(j[i],v))){unassigned.push(j[i]);console.log("added job: " + i);}
+        if(!(self.addJobToVolunteer(j[i],v))){unassigned.push(j[i]);}
       }
       return {'schedule':v,'unassigned':unassigned,'score':(self.rateSchedule(v)+unassigned.length*5)};
     }
@@ -279,7 +393,6 @@ angular.module('ulyssesApp')
         if(self.canInsert(job.start,job.end,v.commitments.concat(v.newCommitments))){
           v.newCommitments.push(job);
           volunteers.push(v);
-          //console.log("while adding job: " + volunteers);
           return true;
         }else{
           volunteers.push(v);
@@ -308,7 +421,6 @@ angular.module('ulyssesApp')
         arr[i] = arr[rand];
         arr[rand] = temp;
       }
-      //console.log(arr.length);
       return arr;
     }
 
@@ -321,7 +433,6 @@ angular.module('ulyssesApp')
         var y=commitments[i];
         b=b&&(((start>y.start)&&(end>y.end))||((start<y.start)&&(end<y.end)));
         }
-    //  console.log("while canInserting: " + commitments.length);
       return b;
     }
 
