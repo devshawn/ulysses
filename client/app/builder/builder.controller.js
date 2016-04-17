@@ -34,8 +34,8 @@ angular.module('ulyssesApp')
 
     self.buildSchedule = function() {
       // check for no time slots, no jobs, etc
-      console.log(areThereJobs);
-      console.log("slot", areThereSlots);
+      //console.log(areThereJobs);
+      //console.log("slot", areThereSlots);
 
       if(!areThereJobs) {
         self.success = false;
@@ -46,7 +46,7 @@ angular.module('ulyssesApp')
         self.error = true;
         self.errorMessage = "You have yet to create time slots for your entered jobs.";
       } else {
-        console.log("Start creating schedule...");
+        //console.log("Start creating schedule...");
 
         var checkChild = function(volunteer) {
           return volunteer.childTeam.length > 0;
@@ -132,13 +132,13 @@ angular.module('ulyssesApp')
                 });
               });
 
-              console.log(array);
+              //console.log(array);
               theVolArray[i] = vol;
             });
             Slot.query({}, function(slots) {
               // call generate schedule here
-              console.log("Volunteers: ", volunteers);
-              console.log("Slots: ", results);
+              //console.log("Volunteers: ", volunteers);
+              //console.log("Slots: ", results);
 
               console.log(self.prettyMakeSchedule(slots, volunteers))
             });
@@ -299,5 +299,5 @@ angular.module('ulyssesApp')
     self.personMetric = function(person){
       return person.commitments.concat(person.newCommitments).length * person.commitments.concat(person.newCommitments).length;
     }
-    
+
   });
