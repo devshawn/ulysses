@@ -163,93 +163,103 @@ angular.module('ulyssesApp')
     // output:
     // [{'volunteerID' : String, 'slotID' : String}]
 
-
+    //array,array->array
     self.prettyMakeSchedule=function(slots,volunteers){
-      return self.prettifyOutput(self.makeSchedules(self.slotsToJobs(slots),volunteers,1000));
+      return self.prettifyOutput(self.makeSchedules(self.slotsToJobs(slots),self.addNewCommitments(volunteers),1000));
     }
 
-
+    //array slots->array slots
     self.slotsToJobs = function(arrayOfSlots) {
-      console.log(arrayOfSlots);
+      //console.log(arrayOfSlots);
       var b = [];
-      var i = 0;
-      while (i++ < arrayOfSlots.length-1) {
-        console.log(arrayOfSlots[i]);
-        console.log(arrayOfSlots[i].volunteersNeeded);
+      for(var i=0;i<arrayOfSlots.length;i++){
+        //console.log(arrayOfSlots[i]);
+        //console.log(arrayOfSlots[i].volunteersNeeded);
         var j = 0;
-        while (j++ < arrayOfSlots[i].volunteersNeeded-1) {
+        for(var j=0;j<arrayOfSlots[i].volunteersNeeded;j++){
           b.push({'slotID': arrayOfSlots[i].jobID, 'start': arrayOfSlots[i].start, 'end': arrayOfSlots[i].end});
-          console.log("yay success");
+         // console.log("yay success");
         }
       }
       return b;
     }
 
+    //array of {array array int}->array
     self.prettifyOutput = function(schedules){
-      console.log(schedules);
+      //console.log(schedules);
       var s = schedules.schedule;
       var b = [];
-      var i = 0;
-      var j = 0;
-      while(i++<s.length-1){
-          while(j++<s[i].commitments.length-1) {
-            console.log({'volunteerID':s[i]._id,'slotID':s[i].commitments[j].slotID});
-            b.push({'volunteerID':s[i]._id,'slotID':s[i].commitments[j].slotID});
+      for(var i=0;i<s.length;i++){
+        for(var j=0;j<s[i].newCommitments.length;j++){
+            //console.log({'volunteerID':s[i]._id,'slotID':s[i].newCommitments[j].slotID});
+            b.push({'volunteerID':s[i]._id,'slotID':s[i].newCommitments[j].slotID});
       }
-       // console.log("and here");
-      //console.log(b);
+        //console.log("and here");
+        //console.log(b);
     }
     return b;
     }
 
+    //array,array,int->{array array int}
     self.makeSchedules = function(jobs,volunteers,n){
-      console.log("generating MANY schedules");
+      //console.log("generating MANY schedules");
       var i=0;
-      var best={'schedule':[],'unassigned':[],'score':999999999999999};
-      while(i++<n){
+      var best={'schedule':[],'unassigned':[],'score':9999999999999999999};
+      for(var i=0;i<n;i++){
         var temp = self.generateSchedule(jobs,volunteers);
         if(temp.score<best.score){
           best=temp;
-          console.log("you suck at programming");
-        //  console.log(best);
+          //console.log("you suck at programming");
+          //console.log(best);
         }
       }
 
       return best;
     }
 
+    //array,array->{array array int}
     self.generateSchedule = function(jobs,volunteers){
-    //  console.log("generating a schedule");
+      //console.log("generating a schedule");
       var j = self.shuffleArray(jobs);
+      //console.log("volunteers is: " + volunteers)
       var v = self.shuffleArray(volunteers);
-    //  console.log("finished shuffling");
+     // console.log("finished shuffling");
       var unassigned = [];
       var i=0;
-      while(i++<j.length-1) {
-   //     console.log("fuck reduce");
+      for(var i=0;i<j.length;i++){
+       // console.log("fuck reduce");
         if(!(self.addJobToVolunteer(j[i],v))){unassigned.push(j[i]);}
       }
       return {'schedule':v,'unassigned':unassigned,'score':(self.rateSchedule(v)+unassigned.length*5)};
     }
 
+    //json object,array->boolean (has a side effect on volunteers)
     self.addJobToVolunteer = function(job,volunteers){
-      var i = 0;
-      while(i++<volunteers.length-1){
+      for(var i=0;i<volunteers.length;i++){
         var v = volunteers.shift();
-        if(self.canInsert(job.start,job.end,v.commitments)){
-          v.commitments.push(job);
+        if(self.canInsert(job.start,job.end,v.commitments.concat(v.newCommitments))){
+          v.newCommitments.push(job);
           volunteers.push(v);
           return true;
         }else{
           volunteers.push(v);
+          return false;
         }
       }
-      return false;
+    }
+
+    //array->array
+    self.addNewCommitments = function(schedule){
+      var mySchedule = schedule;
+      for(var i = 0;i<mySchedule.length;i++){
+        mySchedule[i].newCommitments = [];
+      }
+      return mySchedule;
     }
 
     //array->array
     self.shuffleArray = function(arr) {
-    //  console.log("shuffling, every day");
+     // console.log("shuffling, every day");
       var temp;
       var rand;
       for (var i = 0; i < arr.length; i++) {
@@ -261,34 +271,33 @@ angular.module('ulyssesApp')
       return arr;
     }
 
+    //int,int,array->boolean
     self.canInsert = function(start,end,commitments){
-   //   console.log("canInserting?");
+     // console.log("canInserting?");
       var i = 0;
       var b = true;
-      while(i++<commitments.length-1){
+      for(var i=0;i<commitments.length;i++){
         var y=commitments[i];
         b=b&&(((start>y.start)&&(end>y.end))||((start<y.start)&&(end<y.end)));
         }
       return b;
     }
 
+    //array->int
     self.rateSchedule = function(schedule) {
-   //   console.log("ratingSchedule");
+     // console.log("ratingSchedule");
       var score = 0;
       for(var i = 0; i < schedule.length; i++){
         score = score + self.personMetric(schedule[i]);
       }
-   //   console.log("rated at: "+score);
+    //  console.log("rated at: "+score);
       return score;
     }
 
 
+    //json object->int
     self.personMetric = function(person){
-      return person.commitments.length * person.commitments.length;
+      return person.commitments.concat(person.newCommitments).length * person.commitments.concat(person.newCommitments).length;
     }
-
-
-    self.print = function(arg){
-      console.log(arg);
-    }
+    
   });
