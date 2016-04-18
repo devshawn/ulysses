@@ -140,22 +140,22 @@ angular.module('ulyssesApp')
               //console.log("Volunteers: ", volunteers);
               //console.log("Slots: ", results);
               var arr = self.prettyMakeSchedule(slots, volunteers);
-              console.log(arr)
-              console.log(arr.length);
+          //    console.log(arr)
+            //  console.log(arr.length);
               var final = [];
 
               for(var i = 0; i < arr.length; i++) {
                 if(i == 0) {
                   final.push(arr[i]);
-                  console.log("A");
+                  //console.log("A");
                 } else {
                   var toAdd = false;
                   final.forEach(function(element) {
                     if(element.slotID == arr[i].slotID && element.volunteerID == arr[i].volunteerID) {
-                        console.log("true");
+                      //  console.log("true");
                         toAdd = true;
                     } else {
-                        console.log("false");
+                      //  console.log("false");
                     }
                   });
                   if(!toAdd) {
@@ -192,19 +192,15 @@ angular.module('ulyssesApp')
 
     //array,array->array
     self.prettyMakeSchedule=function(slots,volunteers){
-      console.log(slots.length);
-      return self.prettifyOutput(
-                self.makeSchedules(
-                  self.slotsToJobs(slots),
-                  self.addNewCommitments(volunteers),
-                  1000));
+      console.log(slots);
+      return self.makeSchedules(self.slotsToJobs(slots),self.addNewCommitments(volunteers),1000).slots;
     }
 
     //array slots->array slots
     self.slotsToJobs = function(arrayOfSlots) {
       //console.log(arrayOfSlots);
       var b = [];
-      console.log(arrayOfSlots.length);
+      //console.log(arrayOfSlots.length);
       for(var i=0;i<arrayOfSlots.length;i++){
         //console.log(arrayOfSlots[i]);
         //console.log(arrayOfSlots[i].volunteersNeeded);
@@ -215,35 +211,37 @@ angular.module('ulyssesApp')
         }
       }
       console.log(b.length);
+      //console.log(b.length);
       return b;
     }
-
+/*
     //array of {array array int}->array
     self.prettifyOutput = function(schedules){
       //console.log(schedules);
       var s = schedules.schedule;
+      console.log(s);
       var b = [];
-      var n = 0;
+      //var n = 0;
       for(var i=0;i<s.length;i++){
         for(var j=0;j<s[i].newCommitments.length;j++){
-            n++
+            //n++;
             //console.log({'volunteerID':s[i]._id,'slotID':s[i].newCommitments[j].slotID});
             b.push({'volunteerID':s[i]._id,'slotID':s[i].newCommitments[j].slotID});
       }
         //console.log("and here");
         //console.log(b);
     }
-      console.log("n is: "+n);
-      console.log(b.length);
+      //console.log("n is: "+n);
+      //console.log(b.length);
     return b;
-    }
+  }*/
 
     //array,array,int->{array array int}
     self.makeSchedules = function(jobs,volunteers,n){
       //console.log("generating MANY schedules");
-      console.log(jobs.length);
+      //console.log(jobs.length);
       var i=0;
-      var best={'schedule':[],'unassigned':[],'score':9999999999999999999};
+      var best={'schedule':[],'unassigned':[],'slots':[],'score':9999999999999999999};
       for(var i=0;i<n;i++){
         var temp = self.generateSchedule(jobs,volunteers);
         if(temp.score<best.score){
@@ -252,13 +250,17 @@ angular.module('ulyssesApp')
           //console.log(best);
         }
       }
-      console.log(jobs.length);
+      //console.log(jobs.length);
+      //console.log(best);
+      console.log(best.slots.length);
+      console.log(best.score);
       return best;
     }
 
     //array,array->{array array int}
     self.generateSchedule = function(jobs,volunteers){
       //console.log("generating a schedule");
+      var slots = [];
       var j = self.shuffleArray(jobs);
       //console.log("volunteers is: " + volunteers)
       var v = self.shuffleArray(volunteers);
@@ -266,10 +268,14 @@ angular.module('ulyssesApp')
       var unassigned = [];
       var i=0;
       for(var i=0;i<j.length;i++){
-       // console.log("fuck reduce");
-        if(!(self.addJobToVolunteer(j[i],v))){unassigned.push(j[i]);console.log("added job: " + i);}
+        if(!(self.addJobToVolunteer(j[i],v))){
+          unassigned.push(j[i]);
+          //console.log("added job: " + i);
+        }else{
+        //  console.log('junk is: ' + {'volunteerID':volunteers[volunteers.length-1]._id,'slotID':j[i].slotID})
+          slots.push({'volunteerID':v[v.length-1]._id,'slotID':j[i].slotID})}
       }
-      return {'schedule':v,'unassigned':unassigned,'score':(self.rateSchedule(v)+unassigned.length*5)};
+      return {'schedule':v,'unassigned':unassigned,'slots':slots,'score':unassigned.length};//(self.rateSchedule(v)+unassigned.length*500)};
     }
 
     //json object,array->boolean (has a side effect on volunteers)
@@ -279,6 +285,7 @@ angular.module('ulyssesApp')
         if(self.canInsert(job.start,job.end,v.commitments.concat(v.newCommitments))){
           v.newCommitments.push(job);
           volunteers.push(v);
+          //console.log("stuff:" + v)
           //console.log("while adding job: " + volunteers);
           return true;
         }else{
@@ -339,7 +346,7 @@ angular.module('ulyssesApp')
 
     //json object->int
     self.personMetric = function(person){
-      return person.commitments.concat(person.newCommitments).length * person.commitments.concat(person.newCommitments).length;
+      return person.newCommitments.length * person.newCommitments.length;
     }
 
   });
