@@ -57,10 +57,17 @@
   margin-top: -15px;
 }
 
-.group-item-calendar {
+.group-item-mail {
   position: absolute;
   top: 50%;
   right: 60px;
+  margin-top: -15px;
+}
+
+.group-item-calendar {
+  position: absolute;
+  top: 50%;
+  right: 105px;
   margin-top: -15px;
 }
 

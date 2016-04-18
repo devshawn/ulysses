@@ -103,80 +103,211 @@ angular.module('ulyssesApp')
         var volunteers;
         Volunteer.query({}, function(results) {
           volunteers = results;
-          volunteers = volunteers.filter(checkChild);
 
           // next, loop through volunteers and check for team conflicts
           Team.query({}, function(teams) {
             volunteers.forEach(function(vol, i, theVolArray) {
               vol.commitments = [];
-              // create array of child team / division stuff to look through
-              var array = vol.childTeam.split(',');
-              array.forEach(function(item, index, theArray) {
-                item = item.trim();
-                item = item.replace(/^#/, '');
-                var memberNumber = item.split(' ')[0];
-                var problemNumber = item.split(' ')[1].split('/')[0];
-                var divisionNumber = romanize(item.split(' ')[1].split('/')[1]);
-                theArray[index] = {'member' : memberNumber, 'problem' : problemNumber, 'division' : divisionNumber};
-              });
-
-              // loop through each value in the array and check for a team conflict
-              array.forEach(function(item) {
-                teams.forEach(function(team) {
-                  if(team.problem == item.problem && team.division == item.division && team.teamNumber == item.member) {
-                    var startTime = subtract15Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
-                    var endTime = add45Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
-                    //console.log("Old: ", team.longTime, "new: ", longTime);
-                    vol.commitments.push({'start' : startTime, 'end' : endTime});
-                  }
+              if(vol.childTeam.length > 0) {
+                // create array of child team / division stuff to look through
+                var array = vol.childTeam.split(',');
+                array.forEach(function(item, index, theArray) {
+                  item = item.trim();
+                  item = item.replace(/^#/, '');
+                  var memberNumber = item.split(' ')[0];
+                  var problemNumber = item.split(' ')[1].split('/')[0];
+                  var divisionNumber = romanize(item.split(' ')[1].split('/')[1]);
+                  theArray[index] = {'member' : memberNumber, 'problem' : problemNumber, 'division' : divisionNumber};
                 });
-              });
 
-              //console.log(array);
-              theVolArray[i] = vol;
-            });
-            Slot.query({}, function(slots) {
-              // call generate schedule here
-              //console.log("Volunteers: ", volunteers);
-              //console.log("Slots: ", results);
-              var arr = self.prettyMakeSchedule(slots, volunteers);
-          //    console.log(arr)
-            //  console.log(arr.length);
-              var final = [];
+                // loop through each value in the array and check for a team conflict
+                array.forEach(function(item) {
+                  teams.forEach(function(team) {
+                    if(team.problem == item.problem && team.division == item.division && team.teamNumber == item.member) {
+                      var startTime = subtract15Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+                      var endTime = add45Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
 
-              for(var i = 0; i < arr.length; i++) {
-                if(i == 0) {
-                  final.push(arr[i]);
-                  //console.log("A");
-                } else {
-                  var toAdd = false;
-                  final.forEach(function(element) {
-                    if(element.slotID == arr[i].slotID && element.volunteerID == arr[i].volunteerID) {
-                      //  console.log("true");
-                        toAdd = true;
-                    } else {
-                      //  console.log("false");
+                      if(startTime < 600) {
+                        startTime += 1200;
+                      }
+
+                      if(endTime < 600) {
+                        endTime += 1200;
+                      }
+
+                      //console.log("Old: ", team.longTime, "new: ", longTime);
+                      vol.commitments.push({'start' : startTime, 'end' : endTime});
                     }
                   });
-                  if(!toAdd) {
-                    final.push(arr[i]);
-                  }
-                  //toAdd.forEach(function(element) {
-                  //  final.push(element);
-                  //});
-                }
-              }
+                });
 
-              console.log(final);
+                //console.log(array);
+                theVolArray[i] = vol;
+              }
+            });
+
+            volunteers.sort(function(a, b) {
+              return b.commitments.length - a.commitments.length;
+            });
+
+            Slot.query({}, function(slots) {
+              // call generate schedule here
+              console.log("Volunteers: ", volunteers);
+              console.log("Slots: ", slots);
+
+              // final datastructure of volunteers assigned to time slots
+              var final = [];
+
+              // duplicate slots based on volunteers left to be added
+              var totalSlots = [];
+              slots.forEach(function(slot) {
+                for(var i = 0; i < (slot.volunteersNeeded - slot.volunteers.length); i++) {
+                  totalSlots.push(slot);
+                }
+              });
+              console.log("Duped slots: ", totalSlots);
+
+              volunteers.forEach(function(volunteer) {
+                if(totalSlots.length > 0) {
+                  if(volunteer.commitments.length > 0) {
+                    // if we have commitments
+                    if(volunteer._id != "") {
+                      //console.log(totalSlots[0]);
+                      //console.log(volunteer.commitments)
+                      var slotToAdd = self.findSlot(totalSlots, volunteer.commitments);
+                      //console.log("SLOT TO ADD", slotToAdd);
+                      if(slotToAdd) {
+                        final.push({'volunteerID' : volunteer._id, 'slotID' : slotToAdd._id,  'locationID' : slotToAdd.locations[0]});
+                        var index = -1;
+                        totalSlots.forEach(function(slot, i) {
+                          if(slot._id == slotToAdd._id) {
+                            index = i;
+                          }
+                        });
+                        if(index > -1) {
+                          totalSlots.splice(index, 1);
+                        }
+                      } else {
+                        console.log("skipped over", volunteer._id);
+                      }
+                    }
+
+                  } else {
+                    // no commitments
+                    final.push({'volunteerID' : volunteer._id, 'slotID' : totalSlots[0]._id, 'locationID' : totalSlots[0].locations[0]});
+                    totalSlots.splice(0, 1);
+                  }
+                }
+              });
+              console.log("Final schedule: ", final);
+
+              // now, add volunteers to slots.
+              final.sort(function(a, b) {
+                return b.slotID > a.slotID;
+              });
+              // now, add volunteers to slots.
+              slots.sort(function(a, b) {
+                return b._id > a._id;
+              });
+
+              var organizedSlots = [];
+
+              slots.forEach(function(slot) {
+                organizedSlots.push(final.slice(0, (slot.volunteersNeeded - slot.volunteers.length)));
+                final.splice(0, (slot.volunteersNeeded - slot.volunteers.length));
+              });
+
+              console.log("Organized: ", organizedSlots);
+
+              // loop through organized slots
+              organizedSlots.forEach(function(slot) {
+                var volunteers = [];
+                slot.forEach(function(minislot) {
+                  console.log(minislot);
+                  volunteers.push(minislot.volunteerID);
+                  var locations = [];
+                  locations.push({'slotID' : minislot.slotID, 'locationID' : minislot.locationID});
+                  Volunteer.update({id: minislot.volunteerID}, {'slots' : [minislot.slotID], 'locations' : locations});
+                });
+                Slot.update({id: slot[0].slotID}, {'volunteers' : volunteers});
+
+              });
+
+              self.success = true;
+              self.error = false;
+
             });
           });
         });
-
-        // do slots
-        Slot.query({}, function(results) {
-
-        });
       }
+    }
+
+    self.findSlot = function(totalSlots, commitments) {
+      var toReturn = [];
+      totalSlots.forEach(function(slot) {
+        var foundConflict = false;
+        commitments.forEach(function(commitment) {
+          if(self.isConflict(slot, commitment)) {
+            //console.log("FOUND CONFLICT");
+            foundConflict = true;
+          }
+        });
+        if(!foundConflict && toReturn.length == 0) {
+          toReturn.push(slot);
+        }
+      });
+
+      if(toReturn.length > 0) {
+        return toReturn[0];
+      } else {
+        return false;
+      }
+    }
+
+      //checks to see if two time slots overlap
+    self.isConflict = function(slot, commitment) {
+      var start1 = parseInt(slot.start);
+      var end1 = parseInt(slot.end);
+      var start2 = parseInt(commitment.start);
+      var end2 = parseInt(commitment.end);
+      if((start1 <= start2 && start2 <= end1)) {
+        return true;
+      }
+      else if(start2 <= start1 && start1 <= end2) {
+        return true;
+      }
+      else if(start1 == start2 && end1 == end2)
+      {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    self.conflictLoop = function(slot1, volunteerid, callback) {
+      console.log("test");
+      Volunteer.get({id: volunteerid }, function(results) {
+        var hasCalledBack = false;
+        for(var i = 0; i < results.slots.length; i++)
+        {
+          Slot.get({id: results.slots[i]}, function(results1) {
+            console.log(results1);
+            if(self.isConflict(slot1, results1))
+            {
+              callback(true);
+              hasCalledBack = true;
+            } else if(i == results.slots.length) {
+              if(!hasCalledBack) {
+                callback(false);
+              }
+            }
+          });
+        }
+
+        if(results.slots.length == 0) {
+          callback(false);
+        }
+      });
     }
 
     //person structure {'commitments':[]}
@@ -192,134 +323,87 @@ angular.module('ulyssesApp')
 
     //array,array->array
     self.prettyMakeSchedule=function(slots,volunteers){
-    //  console.log(slots);
-      return self.makeSchedules(self.slotsToJobs(slots),self.addNewCommitments(volunteers),100).slots;
+      return self.prettifyOutput(self.makeSchedules(self.slotsToJobs(slots),self.addNewCommitments(volunteers),1000));
     }
 
     //array slots->array slots
     self.slotsToJobs = function(arrayOfSlots) {
       //console.log(arrayOfSlots);
       var b = [];
-      //console.log(arrayOfSlots.length);
       for(var i=0;i<arrayOfSlots.length;i++){
         //console.log(arrayOfSlots[i]);
         //console.log(arrayOfSlots[i].volunteersNeeded);
         var j = 0;
         for(var j=0;j<arrayOfSlots[i].volunteersNeeded;j++){
-          b.push({'slotID': arrayOfSlots[i].jobID, 'startTime': arrayOfSlots[i].start, 'endTime': arrayOfSlots[i].end});
-         //console.log("yay success");d m
+          b.push({'slotID': arrayOfSlots[i].jobID, 'start': arrayOfSlots[i].start, 'end': arrayOfSlots[i].end});
+         // console.log("yay success");
         }
       }
-    //  console.log(b.length);
-      //console.log(b.length);
       return b;
     }
-/*
+
     //array of {array array int}->array
     self.prettifyOutput = function(schedules){
       //console.log(schedules);
       var s = schedules.schedule;
-      console.log(s);
       var b = [];
-      //var n = 0;
       for(var i=0;i<s.length;i++){
         for(var j=0;j<s[i].newCommitments.length;j++){
-            //n++;
             //console.log({'volunteerID':s[i]._id,'slotID':s[i].newCommitments[j].slotID});
             b.push({'volunteerID':s[i]._id,'slotID':s[i].newCommitments[j].slotID});
       }
         //console.log("and here");
         //console.log(b);
     }
-      //console.log("n is: "+n);
-      //console.log(b.length);
     return b;
-  }*/
+    }
 
     //array,array,int->{array array int}
     self.makeSchedules = function(jobs,volunteers,n){
       //console.log("generating MANY schedules");
-      //console.log(jobs.length);
-      //var myjobs = jobs;
-      //var myvolunteers = volunteers;
       var i=0;
-      var best={'schedule':[],'unassigned':[],'slots':[],'score':99999};
+      var best={'schedule':[],'unassigned':[],'score':9999999999999999999};
       for(var i=0;i<n;i++){
-        myjobs = 0;
-        myvolunteers = 0;
-        var myjobs = jobs;
-        var myvolunteers = volunteers;
-        var temp = self.generateSchedule(myjobs,myvolunteers);
-        console.log("this is temp.score: "+self.rateSchedule(temp.schedule));
+        var temp = self.generateSchedule(jobs,volunteers);
         if(temp.score<best.score){
           best=temp;
-          console.log("you suck at programming: "+self.rateSchedule(temp.schedule));
+          //console.log("you suck at programming");
+          //console.log(best);
         }
-      temp = 99999;
-
       }
-      //console.log(jobs.length);
-      //console.log(best);
-    //  console.log(best.slots.length);
-    //  console.log(best.unassigned.length);
+
       return best;
     }
 
     //array,array->{array array int}
     self.generateSchedule = function(jobs,volunteers){
       //console.log("generating a schedule");
-      var slots = [];
-      var j = 0;
-      j = self.shuffleArray(jobs);
+      var j = self.shuffleArray(jobs);
       //console.log("volunteers is: " + volunteers)
-      var v = 0;
-      v = self.shuffleArray(volunteers);
+      var v = self.shuffleArray(volunteers);
      // console.log("finished shuffling");
-     var unassigned = 0;
-      unassigned = [];
+      var unassigned = [];
       var i=0;
-      //console.log("unassigned length: " + unassigned.length);
       for(var i=0;i<j.length;i++){
-        if(!(self.addJobToVolunteer(j[i],v))){
-          unassigned.push(j[i]);
-          //console.log("added job: " + i);
-        }else{
-        //  console.log('junk is: ' + {'volunteerID':volunteers[volunteers.length-1]._id,'slotID':j[i].slotID})
-          slots.push({'volunteerID':v[v.length-1]._id,'slotID':j[i].slotID});
-        }
+       // console.log("fuck reduce");
+        if(!(self.addJobToVolunteer(j[i],v))){unassigned.push(j[i]);}
       }
-      return {'schedule':v,'unassigned':unassigned,'slots':slots,'score':(self.rateSchedule(v))/*+(50*unassigned.length)*/};
-      //(self.rateSchedule(v)+unassigned.length*500)};
+      return {'schedule':v,'unassigned':unassigned,'score':(self.rateSchedule(v)+unassigned.length*5)};
     }
-
-  /*  self.combine = function(arr1,arr2){
-      var arr3 = arr1;
-      var arr4 = arr3;
-      for(var i = 0;i<arr2.length;i++){
-        arr3.push(arr4.pop());
-      }
-      return arr3;
-    }*/
 
     //json object,array->boolean (has a side effect on volunteers)
     self.addJobToVolunteer = function(job,volunteers){
       for(var i=0;i<volunteers.length;i++){
         var v = volunteers.shift();
-        //console.log(v.commitments.concat(v.newCommitments));
-      //  var a = self.combine(v.newCommitments,v.commitments);
-      //  console.log("a is: "+a);
-    //  console.log(v.commitments);
-        if(self.canInsert(job.startTime,job.endTime,v.newCommitments)){//v.commitments.concat(v.newCommitments))){
+        if(self.canInsert(job.start,job.end,v.commitments.concat(v.newCommitments))){
           v.newCommitments.push(job);
           volunteers.push(v);
-          //console.log("stuff:" + v)
-          //console.log("while adding job: " + volunteers);
           return true;
         }else{
           volunteers.push(v);
+          return false;
         }
       }
-      return false;
     }
 
     //array->array
@@ -342,7 +426,6 @@ angular.module('ulyssesApp')
         arr[i] = arr[rand];
         arr[rand] = temp;
       }
-      //console.log(arr.length);
       return arr;
     }
 
@@ -353,10 +436,8 @@ angular.module('ulyssesApp')
       var b = true;
       for(var i=0;i<commitments.length;i++){
         var y=commitments[i];
-      //  if(!(((start>y.start)&&(end>y.end))||((start<y.start)&&(end<y.end)))){console.log("it was false");}
-        b=b&(((start>y.startTime)&(end>y.endTime))|((start<y.startTime)&(end<y.endTime)));
+        b=b&&(((start>y.start)&&(end>y.end))||((start<y.start)&&(end<y.end)));
         }
-    //  console.log("while canInserting: " + commitments.length);
       return b;
     }
 
@@ -374,8 +455,7 @@ angular.module('ulyssesApp')
 
     //json object->int
     self.personMetric = function(person){
-      var a = (person.newCommitments.length + person.commitments.length);
-      return a*a;
+      return person.commitments.concat(person.newCommitments).length * person.commitments.concat(person.newCommitments).length;
     }
 
   });
