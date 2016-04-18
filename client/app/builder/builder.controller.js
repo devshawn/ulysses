@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('ulyssesApp')
-  .controller('BuilderCtrl', function ($scope, $state, $stateParams, Job, Slot, Auth, Volunteer, Team) {
+  .controller('BuilderCtrl', function ($scope, $state, $window, $stateParams, Job, Slot, Auth, Volunteer, Team) {
     var self = this;
     self.error = false;
     self.success = false;
@@ -232,7 +232,7 @@ angular.module('ulyssesApp')
                 Slot.update({id: slot[0].slotID}, {'volunteers' : volunteers});
 
               });
-
+              $window.location.href = '/schedule';
               self.success = true;
               self.error = false;
 
