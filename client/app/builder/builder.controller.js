@@ -222,17 +222,19 @@ angular.module('ulyssesApp')
               // loop through organized slots
               organizedSlots.forEach(function(slot) {
                 var volunteers = [];
-                slot.forEach(function(minislot) {
-                  console.log(minislot);
-                  volunteers.push(minislot.volunteerID);
-                  var locations = [];
-                  locations.push({'slotID' : minislot.slotID, 'locationID' : minislot.locationID});
-                  Volunteer.update({id: minislot.volunteerID}, {'slots' : [minislot.slotID], 'locations' : locations});
-                });
-                Slot.update({id: slot[0].slotID}, {'volunteers' : volunteers});
-
+                if(slot.length > 0) {
+                  slot.forEach(function(minislot) {
+                    console.log(minislot);
+                    volunteers.push(minislot.volunteerID);
+                    var locations = [];
+                    locations.push({'slotID' : minislot.slotID, 'locationID' : minislot.locationID});
+                    console.log("Locations: ", locations);
+                    Volunteer.update({id: minislot.volunteerID}, {'slots' : [minislot.slotID], 'locations' : locations});
+                  });
+                  Slot.update({id: slot[0].slotID}, {'volunteers' : volunteers});
+                }
               });
-              $window.location.href = '/schedule';
+              //$window.location.href = '/schedule';
               self.success = true;
               self.error = false;
 
