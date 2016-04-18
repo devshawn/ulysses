@@ -192,7 +192,7 @@ angular.module('ulyssesApp')
 
     //array,array->array
     self.prettyMakeSchedule=function(slots,volunteers){
-      console.log(slots);
+    //  console.log(slots);
       return self.makeSchedules(self.slotsToJobs(slots),self.addNewCommitments(volunteers),1000).slots;
     }
 
@@ -210,7 +210,7 @@ angular.module('ulyssesApp')
          //console.log("yay success");
         }
       }
-      console.log(b.length);
+    //  console.log(b.length);
       //console.log(b.length);
       return b;
     }
@@ -244,16 +244,16 @@ angular.module('ulyssesApp')
       var best={'schedule':[],'unassigned':[],'slots':[],'score':9999999999999999999};
       for(var i=0;i<n;i++){
         var temp = self.generateSchedule(jobs,volunteers);
+        //console.log("this is temp: "+temp.score);
         if(temp.score<best.score){
           best=temp;
-          //console.log("you suck at programming");
-          //console.log(best);
+          //console.log("you suck at programming: "+best.score);
         }
       }
       //console.log(jobs.length);
       //console.log(best);
-      console.log(best.slots.length);
-      console.log(best.score);
+    //  console.log(best.slots.length);
+    //  console.log(best.score);
       return best;
     }
 
@@ -282,6 +282,7 @@ angular.module('ulyssesApp')
     self.addJobToVolunteer = function(job,volunteers){
       for(var i=0;i<volunteers.length;i++){
         var v = volunteers.shift();
+        //console.log(v.commitments.concat(v.newCommitments));
         if(self.canInsert(job.start,job.end,v.commitments.concat(v.newCommitments))){
           v.newCommitments.push(job);
           volunteers.push(v);
@@ -290,9 +291,9 @@ angular.module('ulyssesApp')
           return true;
         }else{
           volunteers.push(v);
-          return false;
         }
       }
+      return false;
     }
 
     //array->array
