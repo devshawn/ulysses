@@ -9,6 +9,9 @@
       <strong>End time</strong>: {{ slotCtrl.parseTime(slotCtrl.slot.end) }} <br />
       <strong>Volunteers needed for slot</strong>: {{ slotCtrl.slot.volunteersNeeded }} <br />
       <strong>Volunteers still needed</strong>: {{ slotCtrl.slot.left }} <br />
+      <ul style="list-style: none; padding-left: 20px;">
+        <li ng-repeat="location in slotCtrl.locations | orderBy:'name'" style="padding-top: 2px; padding-bottom: 2px;"><strong>{{ location.name }}</strong>: {{ location.count }}</li>
+      </ul>
     </div>
   </div>
 
@@ -78,15 +81,15 @@
             <label for="volunteer">Pick a volunteer</label><br />
             <select id="volunteer" name="volunteer" ng-model="slotCtrl.volunteer" required>
               <option ng-show="filteredVols.length" class="dropdown-header" disabled>Volunteers that prefer this job:</option>
-              <option ng-show="filteredVols.length" ng-repeat="vol in filteredVols = (slotCtrl.volunteers | filter: slotCtrl.getJobTitle(slotCtrl.slot.jobID) | orderBy: 'lastName')" value="{{ vol._id }}" >{{ vol.firstName }} {{ vol.lastName }}</option>
+              <option ng-show="filteredVols.length" ng-repeat="vol in filteredVols = (slotCtrl.volunteers | filter: slotCtrl.getJobTitle(slotCtrl.slot.jobID) | orderBy: 'lastName')" value="{{ vol._id }}" ng-if="!vol.inSlot">{{ vol.firstName }} {{ vol.lastName }}</option>
               <option ng-show="filteredVols.length" class="dropdown-header" disabled>All volunteers:</option>
-              <option ng-repeat="vol in slotCtrl.volunteers | orderBy: 'lastName'" value="{{ vol._id }}" >{{ vol.firstName }} {{ vol.lastName }}</option>
+              <option ng-repeat="vol in slotCtrl.volunteers | orderBy: 'lastName'" value="{{ vol._id }}" ng-if="!vol.inSlot">{{ vol.firstName }} {{ vol.lastName }}</option>
             </select>
           </div>
           <div class="form-group pull-left pad-left">
             <label for="volunteer">Pick a location</label><br />
             <select id="location" name="location" ng-model="slotCtrl.location" required>
-              <option ng-repeat="loc in slotCtrl.locations | orderBy: 'name'" value="{{ loc._id }}" >{{ loc.name }}</option>
+              <option ng-repeat="loc in slotCtrl.locations | orderBy: 'name'" ng-if="loc.count > 0" value="{{ loc._id }}" >{{ loc.name }}</option>
             </select>
           </div>
         </div>
