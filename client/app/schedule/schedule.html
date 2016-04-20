@@ -6,7 +6,8 @@
             <strong>Start time</strong>: {{ scheduleCtrl.parseTime(slot.start) }} <br />
             <strong>End time</strong>: {{ scheduleCtrl.parseTime(slot.end) }} <br />
             <strong>Still needed</strong>: {{ slot.left }} <br />
-            <strong>Volunteers</strong>: {{ slot.vols }}
+            <!--<strong>Volunteers</strong>: {{ slot.vols }}-->
+            <div ng-repeat="location in slot.locations | orderBy:'name'"><strong>{{ location.name }}</strong>: {{ location.vols }}</div>
           </a>
           <div class="list-group-item" ng-show="!job.slots.length">No time slots.</div>
     </div>

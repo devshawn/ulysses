@@ -7,7 +7,7 @@ angular.module('ulyssesApp').filter('unsafe', function($sce) {
 })
 
 angular.module('ulyssesApp')
-  .controller('ScheduleCtrl', function ($scope, $state, $stateParams, Job, Slot, Auth, Volunteer, $sce) {
+  .controller('ScheduleCtrl', function ($scope, $state, $stateParams, Job, Slot, Auth, Volunteer, Location, $sce) {
     var self = this;
 
     self.data = {"times" : []};
@@ -27,42 +27,60 @@ angular.module('ulyssesApp')
           self.ourVolunteers.push({'id' : vol._id, 'vol' : vol});
         });
 
-        Job.query({}, function(results) {
-          self.width = ((100 / (results.length))) + "%";
-          Slot.query({}, function(slots) {
-            results.forEach(function(job, index, theArray) {
-              slots.forEach(function(slot, i, slotsArray) {
-                if(slot.jobID == job._id) {
-                  slotsArray[i].vols = "None";
-                  slotsArray[i].left = slot.volunteersNeeded - slot.volunteers.length;
-                  if(slotsArray[i].left / slotsArray[i].volunteersNeeded >= 0.5) {
-                    slotsArray[i].color = "color-red";
-                  } else {
+        Location.query({}, function(locations) {
+          Job.query({}, function(results) {
+            self.width = ((100 / (results.length))) + "%";
+            Slot.query({}, function(slots) {
+              results.forEach(function(job, index, theArray) {
+                slots.forEach(function(slot, i, slotsArray) {
+                  if(slot.jobID == job._id) {
+                    slotsArray[i].vols = "None";
+                    slotsArray[i].left = slot.volunteersNeeded - slot.volunteers.length;
+                    if(slotsArray[i].left / slotsArray[i].volunteersNeeded >= 0.5) {
+                      slotsArray[i].color = "color-red";
+                    } else {
 
-                  }
-                  slot.volunteers.forEach(function(vol) {
-                    self.ourVolunteers.forEach(function(newVol) {
-                      if(newVol.id == vol) {
-                        console.log(newVol);
-                        if(slotsArray[i].vols == "None") {
-                          slotsArray[i].vols = newVol.vol.firstName + " " + newVol.vol.lastName;
-                        } else {
-                          slotsArray[i].vols += ", " + newVol.vol.firstName + " " + newVol.vol.lastName;
+                    }
+
+                    var locs = [];
+                    slot.locations.forEach(function(location) {
+                      locations.forEach(function(location2) {
+                        if(location.locationID == location2._id) {
+                          location2.vols = "None"
+                          slot.volunteers.forEach(function(vol) {
+                            self.ourVolunteers.forEach(function(newVol) {
+                              if(newVol.id == vol) {
+                                newVol.vol.locations.forEach(function(loc) {
+                                  if(loc.locationID == location.locationID) {
+                                    if(location2.vols == "None") {
+                                      location2.vols = newVol.vol.firstName + " " + newVol.vol.lastName;
+                                    } else {
+                                      location2.vols += ", " + newVol.vol.firstName + " " + newVol.vol.lastName;
+                                    }
+                                  }
+                                });
+                              }
+                            });
+                          });
+                          locs.push(location2);
                         }
-                      }
+                      });
                     });
-                  });
 
-                  if(!theArray[index].slots) {
-                    theArray[index].slots = [slot];
-                  } else {
-                    theArray[index].slots.push(slot);
+                    slot.locations = locs;
+                    console.log(slot.locations);
+
+                    if(!theArray[index].slots) {
+                      theArray[index].slots = [slot];
+                    } else {
+                      theArray[index].slots.push(slot);
+                    }
                   }
-                }
+                });
               });
+              console.log(results);
+              self.jobs = results;
             });
-            console.log(results);
-            self.jobs = results;
           });
         });
       });
