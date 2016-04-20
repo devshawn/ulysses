@@ -466,7 +466,7 @@ angular.module('ulyssesApp')
               if(vol2._id == volunteer._id) {
                 vol2.inSlot = false;
               }
-            }
+            });
 
             index = -1;
             var i = 0;
