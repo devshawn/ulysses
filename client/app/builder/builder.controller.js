@@ -177,6 +177,11 @@ angular.module('ulyssesApp')
                       var slotToAdd = self.findSlot(totalSlots, volunteer.commitments);
                       //console.log("SLOT TO ADD", slotToAdd);
                       if(slotToAdd) {
+                        slotToAdd.locations.forEach(function(loc) {
+                          if(loc.value > 0) {
+                            //
+                          }
+                        })
                         final.push({'volunteerID' : volunteer._id, 'slotID' : slotToAdd._id,  'locationID' : slotToAdd.locations[0]});
                         var index = -1;
                         totalSlots.forEach(function(slot, i) {
