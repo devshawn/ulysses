@@ -191,25 +191,38 @@ angular.module('ulyssesApp')
 
       self.updateSlot = function() {
         console.log("updating");
-        var data = self.slot.locations;
-        self.toDelete.forEach(function(location) {
-          var index = data.indexOf(location);
-          if(index > -1) {
-            data.splice(index, 1);
+        var data = [];
+        var newCount = 0;
+        var allGood = true;
+        self.allLocations.forEach(function(location) {
+          console.log(location.name, "value: ", location.value, "count: ", (location.oldValue - location.count))
+          if(location.value < (location.oldValue - location.count)) {
+            allGood = false;
+          }
+          if(location.value > 0) {
+            newCount += location.value;
+            data.push({'locationID' : location._id, 'value' : location.value});
           }
         });
 
-        self.newLocations.forEach(function(location) {
-          data.push(location._id);
-        });
+        if(allGood) {
+          if(newCount > 0) {
+            Slot.update({id: self.slot._id}, {'volunteersNeeded' : newCount, 'locations' : data});
 
-        Slot.update({id: self.slot._id}, {'locations' : data});
-
-
-        self.toggleEdit();
-        self.allLocations = [];
-        self.newLocations = [];
-        $state.reload();
+            self.toggleEdit();
+            self.allLocations = [];
+            self.newLocations = [];
+            $state.reload();
+          } else {
+            self.success = false;
+            self.error = true;
+            self.errorMessage = "You must assign at least one location for this time slot.";
+          }
+        } else {
+          self.success = false;
+          self.error = true;
+          self.errorMessage = "You currently have more volunteers assigned to a location than allowed.";
+        }
       }
 
       self.chooseLocation = function() {
@@ -268,10 +281,6 @@ angular.module('ulyssesApp')
         return self.locations.length > 0;
       }
 
-      self.areThereNewLocations = function() {
-        return self.newLocations.length > 0;
-      }
-
       self.getLocations = function(response, callback) {
         var locs = response.locations;
         var inc = 0;
@@ -279,8 +288,11 @@ angular.module('ulyssesApp')
         locs.forEach(function(location) {
           Location.get({id: location.locationID}, function(results2) {
             inc++;
+            results2.value = location.value;
             results2.count = location.value;
+            results2.oldValue = location.value;
             locations.push(results2);
+            self.allLocations.push(results2);
             if(inc == locs.length) {
               callback(locations);
             }
@@ -296,10 +308,22 @@ angular.module('ulyssesApp')
             results2.locations.forEach(function(loc) {
               results.forEach(function(location) {
                 if(location._id == loc) {
-                  self.allLocations.push(location);
+                  var alreadyAdded = false;
+                  self.allLocations.forEach(function(l) {
+                    if(l._id == loc) {
+                      alreadyAdded = true;
+                    }
+                  });
+                  if(!alreadyAdded) {
+                    location.count = 0;
+                    location.value = 0;
+                    location.oldValue = 0;
+                    self.allLocations.push(location);
+                  }
                 }
               });
             });
+            console.log("T", self.allLocations);
           });
         });
         self.getLocations(response, function(locations) {
@@ -317,9 +341,7 @@ angular.module('ulyssesApp')
                   })
                 }
               });
-              console.log(results)
               self.vols.push(results);
-              console.log(self.vols);
             });
           });
         });
@@ -336,7 +358,6 @@ angular.module('ulyssesApp')
           });
         });
         self.volunteers = results;
-        console.log(results);
       });
 
       self.doesSlotExist = function () {
@@ -388,7 +409,6 @@ angular.module('ulyssesApp')
                     self.errorMessage = "This person is already assigned to a time slot during this time period.";
                   } else {
                     self.slot.volunteers.push(self.volunteer);
-                    console.log(self.slot);
                     Slot.update({id: $stateParams.id}, self.slot);
                     Volunteer.get({id: self.volunteer}).$promise.then(function (results) {
                       console.log("async finished");
@@ -407,7 +427,6 @@ angular.module('ulyssesApp')
 
                         results.location = results2;
                         self.vols.push(results);
-                        console.log(self.vols);
                         var vol = results;
                         vol.slots.push(self.slot._id);
                         vol.locations.push({"locationID" : self.location, "slotID" : self.slot._id});
