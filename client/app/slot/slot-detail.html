@@ -4,62 +4,36 @@
       <div class="pull-right"><span ng-show="slotCtrl.isReadOnly()"><a href="" ng-click="slotCtrl.toggleEdit()">Edit Locations</a> | </span><a href="/slots">Back to slot list</a></div>
     </div>
     <div class="panel-body">
+      <div class="warning" ng-show="slotCtrl.isError() && !slotCtrl.isReadOnly()">{{ slotCtrl.errorMessage }}<br /><br /></div>
       <strong>Job title</strong>: {{ slotCtrl.getJobTitle(slotCtrl.slot.jobID) }} <br />
       <strong>Start time</strong>: {{ slotCtrl.parseTime(slotCtrl.slot.start) }} <br />
       <strong>End time</strong>: {{ slotCtrl.parseTime(slotCtrl.slot.end) }} <br />
-      <strong>Volunteers needed for slot</strong>: {{ slotCtrl.slot.volunteersNeeded }} <br />
+      <div ng-show="slotCtrl.isReadOnly()"><strong>Volunteers needed for slot</strong>: {{ slotCtrl.slot.volunteersNeeded }} <br />
       <strong>Volunteers still needed</strong>: {{ slotCtrl.slot.left }} <br />
       <ul style="list-style: none; padding-left: 20px;">
         <li ng-repeat="location in slotCtrl.locations | orderBy:'name'" style="padding-top: 2px; padding-bottom: 2px;"><strong>{{ location.name }}</strong>: {{ location.count }}</li>
       </ul>
     </div>
-  </div>
-
-  <div class="panel panel-default" ng-hide="slotCtrl.isReadOnly()">
-    <div class="panel-heading">Add locations for this time slot:</div>
-    <div class="panel-body">
-      <div class="form-group">
-        <label for="locations"><strong>Pick a location</strong></label><br />
-        <select id="locations" name="locations" ng-model="slotCtrl.locationToChoose">
-          <option ng-repeat="location in slotCtrl.allLocations" value="{{ location._id }}" >{{ location.name }}</option>
-        </select>
-      </div>
-      <button ng-click="slotCtrl.chooseLocation()" class="btn btn-default">Add Location</button>
-    </div>
-  </div>
-
-  <div class="panel panel-default" ng-hide="slotCtrl.isReadOnly()">
-    <div class="panel-heading">New locations to be added:</div>
-    <div class="list-group">
-      <div class="list-group-item no-padding" style="" ng-repeat="location in slotCtrl.newLocations">
-        <div class="group-item">
-          {{ location.name }}
+    <div class="form-group" ng-hide="slotCtrl.isReadOnly()"><br />
+      <label for="locations"><strong>Volunteers needed</strong></label><br />
+      <!--<select id="locations" name="locations" ng-model="slotCtrl.locationToChoose">
+        <option ng-repeat="location in slotCtrl.locations" value="{{ location._id }}" >{{ location.name }}</option>
+      </select>-->
+      <div class="list-group">
+        <div class="group-item width-50" ng-repeat="location in slotCtrl.allLocations | orderBy:'name'">{{ location.name }}
+          <div class="pull-right"><input type="number" ng-model="location.value"></input></div>
         </div>
-        <a ng-click="slotCtrl.removeLocation(location)" ng-href="" class="btn btn-sm btn-danger group-item-remove" style=""><span class="glyphicon glyphicon-trash"></span></a>
       </div>
     </div>
-    <div class="panel-body" ng-hide="slotCtrl.areThereNewLocations()">There are currently no locations.</div>
   </div>
-
-  <div class="panel panel-default" ng-hide="slotCtrl.isReadOnly()">
-    <div class="panel-heading">Current locations for this time slot:</div>
-    <div class="list-group">
-      <div class="list-group-item no-padding" style="" ng-repeat="location in slotCtrl.locations">
-        <div class="group-item">
-          {{ location.name }}
-        </div>
-        <a ng-click="slotCtrl.deleteLocation(location)" ng-href="" class="btn btn-sm btn-danger group-item-remove" style=""><span class="glyphicon glyphicon-trash"></span></a>
-      </div>
-    </div>
-    <div class="panel-body" ng-hide="slotCtrl.areThereLocations()">There are currently no locations.</div>
   </div>
 
   <div ng-hide="slotCtrl.isReadOnly()" class="text-center">
     <button class="btn btn-primary" type="submit" ng-click="slotCtrl.updateSlot()" name="submit">Update Slot</button>
-    <button class="btn btn-danger" type="submit" ng-click="slotCtrl.cancelUpdates()" name="cancel">Cancel Changes</button>
+    <button class="btn btn-danger" type="submit" ng-click="slotCtrl.cancelUpdates()" name="cancel">Cancel Changes</button><br /><br />
   </div>
 
-  <div class="panel panel-default" ng-show="slotCtrl.isReadOnly()">
+  <div class="panel panel-default">
     <div class="panel-heading">Volunteers assigned to this time slot:</div>
     <div class="list-group">
       <div class="list-group-item no-padding" ng-repeat="volunteer in slotCtrl.vols | orderBy: 'lastName'">

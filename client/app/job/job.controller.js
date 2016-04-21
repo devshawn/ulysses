@@ -212,71 +212,35 @@ angular.module('ulyssesApp')
         }
       }
 
-      self.checkForLocationUsage = function(location, callback) {
-        console.log("called")
-        var hasCalledBack = false;
-        Slot.query({jobID: self.job._id}, function(results) {
-          if(results.length == 0) {
-            callback(false);
-          }
-          var i = 0;
-          results.forEach(function(slot) {
-            // for each slot, search its volunteer for this location
-            var j = 0;
-            slot.volunteers.forEach(function(volunteer) {
-              Volunteer.get({id: volunteer}, function(vol) {
-                var t = 0;
-                vol.locations.forEach(function(loc) {
-                  console.log("length1: ", results.length, "length2: ", slot.volunteers.length, "length3: ", vol.locations.length);
-                  console.log("i ", i, "j ", j, "t ", t)
-                  if(loc.locationID == location._id) {
-                    console.log("FOUND A HIT");
-                    if(!hasCalledBack) {
-                      callback(true);
-                    }
-                    hasCalledBack = true;
-                  }
-                  t++;
-
-                  if(i == results.length && j == (slot.volunteers.length - 1) && t == (vol.locations.length)) {
-                    if(!hasCalledBack) {
-                      callback(false);
-                    }
+      self.removeLocation = function(location) {
+        if (self.locations.length > 1) {
+          if (location._id) {
+            Slot.query({'jobID' : self.job._id}, function(results) {
+              var error = false;
+              results.forEach(function(slot) {
+                slot.locations.forEach(function(location2) {
+                  if(location._id == location2.locationID) {
+                    error = true;
                   }
                 });
-                j++;
               });
-            });
-            i++;
-          });
-        });
-      }
 
-      self.removeLocation = function(location) {
-        if (self.locations.length >= 1) {
-            console.log(location);
-          if (location._id) {
-            console.log(location);
-            self.checkForLocationUsage(location, function(results) {
-              if(results === true) {
-                $timeout(function() {
-                  alert("You cannot delete a location that has been assigned to a volunteer.");
-                })
+              if(error) {
+                console.log("dont delete");
+                alert("You cannot delete this location as it is assigned to a time slot.");
               } else {
                 var index = self.job.locations.indexOf(location._id);
                 if (index > -1) {
                   self.job.locations.splice(index, 1);
                 }
                 Job.update({id: self.job._id}, self.job);
-
+                Location.remove({id: location._id});
                 var index = self.locations.indexOf(location);
                 if (index > -1) {
                   self.locations.splice(index, 1);
                 }
               }
-            });
-
-
+            })
           } else {
             var index = self.locations.indexOf(location);
             if (index > -1) {
@@ -288,8 +252,8 @@ angular.module('ulyssesApp')
               self.newLocations.splice(index, 1);
             }
           }
-
-
+        } else {
+          alert("You must have at least one location for a job.");
         }
       }
 
