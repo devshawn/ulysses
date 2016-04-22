@@ -33,42 +33,38 @@ angular.module('ulyssesApp')
             Slot.query({}, function(slots) {
               results.forEach(function(job, index, theArray) {
                 slots.forEach(function(slot, i, slotsArray) {
+                  var testArray = [];
                   if(slot.jobID == job._id) {
                     slotsArray[i].vols = "None";
                     slotsArray[i].left = slot.volunteersNeeded - slot.volunteers.length;
                     if(slotsArray[i].left / slotsArray[i].volunteersNeeded >= 0.5) {
                       slotsArray[i].color = "color-red";
-                    } else {
-
                     }
 
-                    var locs = [];
                     slot.locations.forEach(function(location) {
-                      locations.forEach(function(location2) {
-                        if(location.locationID == location2._id) {
-                          location2.vols = "None"
-                          slot.volunteers.forEach(function(vol) {
-                            self.ourVolunteers.forEach(function(newVol) {
-                              if(newVol.id == vol) {
-                                newVol.vol.locations.forEach(function(loc) {
-                                  if(loc.locationID == location.locationID) {
-                                    if(location2.vols == "None") {
-                                      location2.vols = newVol.vol.firstName + " " + newVol.vol.lastName;
-                                    } else {
-                                      location2.vols += ", " + newVol.vol.firstName + " " + newVol.vol.lastName;
-                                    }
-                                  }
-                                });
-                              }
-                            });
-                          });
-                          locs.push(location2);
+                      var name = "";
+                      locations.forEach(function(loc) {
+                        if(loc._id == location.locationID) {
+                          name = loc.name;
                         }
                       });
+                      var locs = "None";
+                      self.ourVolunteers.forEach(function(volunteer) {
+                        volunteer.vol.locations.forEach(function(location2) {
+                          if(location.locationID == location2.locationID && slot._id == location2.slotID) {
+                            if(locs == "None") {
+                              locs = volunteer.vol.firstName + " " + volunteer.vol.lastName;
+                            } else {
+                              locs += ", " + volunteer.vol.firstName + " " + volunteer.vol.lastName;
+                            }
+                          }
+                        });
+                      })
+                      testArray.push({'name' : name, 'vols' : locs});
                     });
 
-                    slot.locations = locs;
-                    console.log(slot.locations);
+                    slot.locations = testArray;
+                    console.log(testArray);
 
                     if(!theArray[index].slots) {
                       theArray[index].slots = [slot];
@@ -78,7 +74,7 @@ angular.module('ulyssesApp')
                   }
                 });
               });
-              console.log(results);
+              //console.log(results);
               self.jobs = results;
             });
           });
