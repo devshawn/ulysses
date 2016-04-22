@@ -150,125 +150,96 @@ angular.module('ulyssesApp')
               return b.commitments.length - a.commitments.length;
             });
 
+            // START ALGORITHM
+
             Slot.query({}, function(slots) {
               // call generate schedule here
               console.log("Volunteers: ", volunteers);
               console.log("Slots: ", slots);
 
-              // final datastructure of volunteers assigned to time slots
-              var final = [];
+              var volunteersCopy = volunteers;
+              var duplicatedSlots = []; // slots that we need to add volunteers to
+              var final = []; // our final list of volunteers tied to slot ids and locations
 
-              // duplicate slots based on volunteers left to be added
-              var totalSlots = [];
+              // loop through each slot and create a new list of slots tied to locations
               slots.forEach(function(slot) {
-                for(var i = 0; i < (slot.volunteersNeeded - slot.volunteers.length); i++) {
-                  totalSlots.push(slot);
-                }
-              });
-              console.log("Duped slots: ", totalSlots);
-
-              volunteers.forEach(function(volunteer) {
-                if(totalSlots.length > 0) {
-                  if(volunteer.commitments.length > 0) {
-                    // if we have commitments
-                    if(volunteer._id != "") {
-                      //console.log(totalSlots[0]);
-                      //console.log(volunteer.commitments)
-                      var slotToAdd = self.findSlot(totalSlots, volunteer.commitments);
-                      //console.log("SLOT TO ADD", slotToAdd);
-                      if(slotToAdd) {
-                        slotToAdd.locations.forEach(function(loc) {
-                          if(loc.value > 0) {
-                            //
-                          }
-                        })
-                        final.push({'volunteerID' : volunteer._id, 'slotID' : slotToAdd._id,  'locationID' : slotToAdd.locations[0]});
-                        var index = -1;
-                        totalSlots.forEach(function(slot, i) {
-                          if(slot._id == slotToAdd._id) {
-                            index = i;
-                          }
-                        });
-                        if(index > -1) {
-                          totalSlots.splice(index, 1);
-                        }
-                      } else {
-                        console.log("skipped over", volunteer._id);
-                      }
-                    }
-
-                  } else {
-                    // no commitments
-                    final.push({'volunteerID' : volunteer._id, 'slotID' : totalSlots[0]._id, 'locationID' : totalSlots[0].locations[0]});
-                    totalSlots.splice(0, 1);
+                slot.locations.forEach(function(location) {
+                  for(var i = 0; i < location.value; i++) {
+                    duplicatedSlots.push({'locationID' : location.locationID, 'slotID' : slot._id, 'start' : slot.start, 'end' : slot.end});
                   }
+                });
+              });
+
+              console.log("Duplicated slots: ", duplicatedSlots);
+
+              // find a volunteer for each slot
+              duplicatedSlots.forEach(function(slot) {
+                var vol = self.findVolunteer(volunteers, slot);
+                console.log(vol);
+                if(vol) {
+                  final.push({'volunteer' : vol, 'slotID' : slot.slotID, 'locationID' : slot.locationID});
+                } else {
+                  console.log("NO ONE FITS");
+                }
+
+
+                var index = volunteers.indexOf(vol)
+                if(index > -1) {
+                  console.log("removing vol");
+                  volunteers.splice(index, 1);
                 }
               });
-              console.log("Final schedule: ", final);
 
-              // now, add volunteers to slots.
-              final.sort(function(a, b) {
-                return b.slotID > a.slotID;
-              });
-              // now, add volunteers to slots.
-              slots.sort(function(a, b) {
-                return b._id > a._id;
-              });
+              console.log("Final: ", final);
 
-              var organizedSlots = [];
-
+              // Loop through and organize final by slots
               slots.forEach(function(slot) {
-                organizedSlots.push(final.slice(0, (slot.volunteersNeeded - slot.volunteers.length)));
-                final.splice(0, (slot.volunteersNeeded - slot.volunteers.length));
+                var data = [];
+                final.forEach(function(element) {
+                  if(element.slotID == slot._id) {
+                    data.push(element);
+                  }
+                });
+
+                var vols = slot.volunteers;
+
+                data.forEach(function(element) {
+                  var commits = element.volunteer.locations;
+                  commits.push({'locationID' : element.locationID, 'slotID' : element.slotID});
+                  var slots2 = element.volunteer.slots;
+                  slots2.push(element.slotID);
+                  vols.push(element.volunteer._id);
+                  Volunteer.update({id: element.volunteer._id}, {'locations' : commits, 'slots' : slots2});
+                });
+
+                Slot.update({id: slot._id}, {'volunteers' : vols});
+
               });
-
-              console.log("Organized: ", organizedSlots);
-
-              // loop through organized slots
-              organizedSlots.forEach(function(slot) {
-                var volunteers = [];
-                if(slot.length > 0) {
-                  slot.forEach(function(minislot) {
-                    console.log(minislot);
-                    volunteers.push(minislot.volunteerID);
-                    var locations = [];
-                    locations.push({'slotID' : minislot.slotID, 'locationID' : minislot.locationID});
-                    console.log("Locations: ", locations);
-                    Volunteer.update({id: minislot.volunteerID}, {'slots' : [minislot.slotID], 'locations' : locations});
-                  });
-                  Slot.update({id: slot[0].slotID}, {'volunteers' : volunteers});
-                }
-              });
-              //$window.location.href = '/schedule';
-              self.success = true;
-              self.error = false;
-
             });
+
+            // END ALGORITHM
           });
         });
       }
     }
 
-    self.findSlot = function(totalSlots, commitments) {
-      var toReturn = [];
-      totalSlots.forEach(function(slot) {
-        var foundConflict = false;
-        commitments.forEach(function(commitment) {
+    self.findVolunteer = function(volunteers, slot) {
+      var toReturn = false;
+      volunteers.forEach(function(volunteer) {
+        var hasConflict = false;
+        volunteer.commitments.forEach(function(commitment) {
           if(self.isConflict(slot, commitment)) {
-            //console.log("FOUND CONFLICT");
-            foundConflict = true;
+            hasConflict = true;
           }
         });
-        if(!foundConflict && toReturn.length == 0) {
-          toReturn.push(slot);
+        if(!hasConflict && toReturn == false) {
+          toReturn = volunteer;
+        } else if(hasConflict && toReturn == false) {
+          console.log(volunteer.firstName, " has a conflict");
         }
-      });
 
-      if(toReturn.length > 0) {
-        return toReturn[0];
-      } else {
-        return false;
-      }
+      });
+      return toReturn;
     }
 
       //checks to see if two time slots overlap
@@ -289,31 +260,5 @@ angular.module('ulyssesApp')
       } else {
         return false;
       }
-    }
-
-    self.conflictLoop = function(slot1, volunteerid, callback) {
-      console.log("test");
-      Volunteer.get({id: volunteerid }, function(results) {
-        var hasCalledBack = false;
-        for(var i = 0; i < results.slots.length; i++)
-        {
-          Slot.get({id: results.slots[i]}, function(results1) {
-            console.log(results1);
-            if(self.isConflict(slot1, results1))
-            {
-              callback(true);
-              hasCalledBack = true;
-            } else if(i == results.slots.length) {
-              if(!hasCalledBack) {
-                callback(false);
-              }
-            }
-          });
-        }
-
-        if(results.slots.length == 0) {
-          callback(false);
-        }
-      });
     }
   });
