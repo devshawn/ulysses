@@ -3,7 +3,7 @@
     <div class="pull-right"><a href="/jobs/create">Add a job</a></div>
   </div>
   <div class="list-group">
-    <div class="list-group-item no-padding" style="" ng-repeat="job in jobCtrl.data">
+    <div class="list-group-item no-padding" style="" ng-repeat="job in jobCtrl.data | orderBy:'title'">
       <a ng-href="/jobs/{{job._id}}" class="group-item">
         <strong>Job title</strong>: {{ job.title }} <br />
         <strong>Description</strong>: {{ job.description }}

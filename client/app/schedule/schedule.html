@@ -1,6 +1,6 @@
 <div class="schedule-container-big">
   <div class="clearfix" ng-show="scheduleCtrl.areThereJobs() && scheduleCtrl.getSlotMode()">
-    <div class="list-group"  style="padding: 5px; float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs">
+    <div class="list-group"  style="padding: 5px; float: left; width: {{ scheduleCtrl.width }}" ng-repeat="job in scheduleCtrl.jobs | orderBy: 'title'">
       <div class="list-group-item list-group-item-information">{{ job.title }}</div>
           <a ng-href="/slots/{{slot._id}}" class="list-group-item {{slot.color}}" ng-repeat="slot in job.slots | orderBy: 'start'">
             <strong>Start time</strong>: {{ scheduleCtrl.parseTime(slot.start) }} <br />
