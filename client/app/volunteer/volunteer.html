@@ -13,7 +13,7 @@
     <div class="list-group-item no-padding" ng-repeat="volunteer in volunteerCtrl.data | filter: search | orderBy: 'lastName'">
       <a ng-href="/volunteers/{{volunteer._id}}" class="group-item">{{ volunteer.firstName }} {{ volunteer.lastName }}</a>
       <a ng-click="" ng-show="volunteer.hasSchedule" ng-href="/volunteers/schedule/{{volunteer._id}}"  class="btn btn-sm btn-success group-item-calendar"><span class="glyphicon glyphicon-list"></span></a>
-      <a ng-click="volunteerCtrl.email([volunteer.email])" target="_blank" class="btn btn-sm btn-primary group-item-mail"><span class="glyphicon glyphicon-envelope"></span></a>
+      <a ng-click="volunteerCtrl.email([volunteer])" target="_blank" class="btn btn-sm btn-primary group-item-mail"><span class="glyphicon glyphicon-envelope"></span></a>
       <a ng-click="volunteerCtrl.removeVolunteer(volunteer)" ng-href="" class="btn btn-sm btn-danger group-item-remove"><span class="glyphicon glyphicon-trash"></span></a>
     </div>
   </div>

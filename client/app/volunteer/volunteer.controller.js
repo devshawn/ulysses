@@ -21,7 +21,7 @@ angular.module('ulyssesApp')
       return self.error;
     }
 
-    self.email = function(addresses) {
+    self.email = function(volunteers) {
       $uibModal.open({
         controller: 'VolunteerEmailCtrl',
         templateUrl: 'app/volunteer/volunteer-email.html',
@@ -39,8 +39,11 @@ Sincerely,
 {{ organizer_name }}
 Odyssey of the Mind Organizer`;
           },
+          subject: function() {
+            return 'Your Odyssey volunteer assignment'
+          },
           to: function() {
-            return addresses.join(', ');
+            return volunteers;
           }
         }
       });

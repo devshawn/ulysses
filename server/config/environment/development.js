@@ -1,5 +1,8 @@
 'use strict';
 
+var nodemailer = require('nodemailer');
+var sendmailTransport = require('nodemailer-sendmail-transport');
+
 // Development specific configuration
 // ==================================
 module.exports = {
@@ -10,6 +13,9 @@ module.exports = {
   },
 
   // Seed database on startup
-  seedDB: true
+  seedDB: true,
+
+  // Email transport (locally in dev)
+  transport: nodemailer.createTransport(sendmailTransport())
 
 };

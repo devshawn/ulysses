@@ -18,6 +18,7 @@ export default function(app) {
   app.use('/api/upload', require('./api/upload'));
 
   app.use('/auth', require('./auth'));
+  app.use('/mail', require('./mail'));
 
   // All undefined asset or api routes should return a 404
   app.route('/:url(api|auth|components|app|bower_components|assets)/*')
