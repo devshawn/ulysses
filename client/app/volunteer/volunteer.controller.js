@@ -26,91 +26,12 @@ angular.module('ulyssesApp')
         controller: 'VolunteerEmailCtrl',
         templateUrl: 'app/volunteer/volunteer-email.html',
         resolve: {
-          body: function() {
-            return `Dear {{ first_name }},
-
-Thank you very much for volunteering as an Odyssey of the Mind judge. On tournament day, please report to the tournament location no later than 8:00 am for introductions and meetings with your judging teams. Your judging assignment will be:
-{{ assignments }}
-
-If there are any changes you need to make to this scheduele, please contact {{ contact_info }}
-
-Sincerely,
-
-{{ organizer_name }}
-Odyssey of the Mind Organizer`;
-          },
-          subject: function() {
-            return 'Your Odyssey volunteer assignment'
-          },
           to: function() {
             return volunteers;
           }
         }
       });
     };
-
-/*
-//judging template; currently in use
-`Dear {{ first_name }},
-
-Thank you very much for volunteering as an Odyssey of the Mind judge. On tournament day, please report to the tournament location no later than 8:00 am for introductions and meetings with your judging teams. Your judging assignment will be:
-{{ assignments }}
-
-If there are any changes you need to make to this scheduele, please contact {{ contact_info }}
-
-Sincerely,
-
-{{ organizer_name }}
-Odyssey of the Mind Organizer`
-
-//non-judging job template
-`Dear {{ first_name }},
-
-Thank you very much for volunteering for Odyssey of the Mind. On tournament day, please report to the tournament location before you're first shift. Your job assignment(s) will be:
-{{ job }}: {{ assignments }}
-
-If there are any issues with these job shifts please contact {{ contact_info }}
-
-Sincerely,
-
-{{ organizer_name }}
-Odyssey of the Mind Organizer`
-
-//not needed template
-`Dear {{ first_name }},
-
-Thank you very much for volunteering for Odyssey of the Mind. We have had an influx of volunteers this year and you are not needed as a volunteer. Again, we would like to thank you for volunteering would hope that you volunteer again next year.
-
-Sincerely,
-
-{{ organizer_name }}
-Odyssey of the Mind Organizer`
-
-//changes have been made that affect a volunteer
-`Dear {{ first_name }},
-
-There have been changes made to the volunteer schedule for Odyssey of the Mind. These changes have affected you and your new schedule is:
-
-{{ job }}: {{ assignments }}
-
-On tournament day, please report to the tournament location before you're first shift. If there are any issues with these new job shifts please contact {{ contact_info }}
-
-Sincerely,
-
-{{ organizer_name }}
-Odyssey of the Mind Organizer`
-
-//changes are being made template
-`Dear {{ first_name }},
-
-We have received your email where you informed us of the conflict in the current schedule. Once we have fixed these issues we will send another email with your new schedule.
-
-Sincerely,
-
-{{ organizer_name }}
-Odyssey of the Mind Organizer`
-*/
-
 
     console.log($state.current.name);
     if ($state.current.name == "volunteer") {
