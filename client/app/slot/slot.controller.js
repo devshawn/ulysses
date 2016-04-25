@@ -429,7 +429,7 @@ angular.module('ulyssesApp')
                       Location.get({id: self.location}, function(results2) {
                         self.locations.forEach(function(loca) {
                           if(loca._id == self.location) {
-                            loca.count--;
+                            loca.needed--;
                           }
                         });
                         self.volunteers.forEach(function(vol2) {
@@ -515,7 +515,7 @@ angular.module('ulyssesApp')
               if(location.slotID == self.slot._id) {
                 self.locations.forEach(function(loca) {
                   if(loca._id == location.locationID) {
-                    loca.count++;
+                    loca.needed++;
                   }
                 })
                 console.log("found");
