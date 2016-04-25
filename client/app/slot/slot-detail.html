@@ -11,7 +11,7 @@
       <div ng-show="slotCtrl.isReadOnly()"><strong>Volunteers needed for slot</strong>: {{ slotCtrl.slot.volunteersNeeded }} <br />
       <strong>Volunteers still needed</strong>: {{ slotCtrl.slot.left }} <br />
       <ul style="list-style: none; padding-left: 20px;">
-        <li ng-repeat="location in slotCtrl.locations | orderBy:'name'" style="padding-top: 2px; padding-bottom: 2px;"><strong>{{ location.name }}</strong>: {{ location.count }}</li>
+        <li ng-repeat="location in slotCtrl.locations | orderBy:'name'" style="padding-top: 2px; padding-bottom: 2px;"><strong>{{ location.name }}</strong>: {{ location.needed }}</li>
       </ul>
     </div>
     <div class="form-group" ng-hide="slotCtrl.isReadOnly()"><br />

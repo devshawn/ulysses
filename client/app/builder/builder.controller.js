@@ -6,6 +6,7 @@ angular.module('ulyssesApp')
     self.error = false;
     self.success = false;
     self.errorMessage = "";
+    self.submitted = false;
 
     var areThereJobs = false;
     var areThereSlots = false;
@@ -36,190 +37,203 @@ angular.module('ulyssesApp')
       // check for no time slots, no jobs, etc
       //console.log(areThereJobs);
       //console.log("slot", areThereSlots);
+      if(!self.submitted) {
+        self.submitted = true;
 
-      if(!areThereJobs) {
-        self.success = false;
-        self.error = true;
-        self.errorMessage = "You must create jobs before building a schedule.";
-      } else if(!areThereSlots) {
-        self.success = false;
-        self.error = true;
-        self.errorMessage = "You have yet to create time slots for your entered jobs.";
-      } else {
-        //console.log("Start creating schedule...");
+        if(!areThereJobs) {
+          self.success = false;
+          self.error = true;
+          self.errorMessage = "You must create jobs before building a schedule.";
+        } else if(!areThereSlots) {
+          self.success = false;
+          self.error = true;
+          self.errorMessage = "You have yet to create time slots for your entered jobs.";
+        } else {
+          //console.log("Start creating schedule...");
 
-        var checkChild = function(volunteer) {
-          return volunteer.childTeam.length > 0;
-        }
-
-        // function from http://blog.stevenlevithan.com/archives/javascript-roman-numeral-converter
-        var romanize = function(num) {
-            if (!+num)
-                return false;
-            var digits = String(+num).split(""),
-                key = ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM",
-                       "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC",
-                       "","I","II","III","IV","V","VI","VII","VIII","IX"],
-                roman = "",
-                i = 3;
-            while (i--)
-                roman = (key[+digits.pop() + (i * 10)] || "") + roman;
-            return Array(+digits.join("") + 1).join("M") + roman;
-        }
-
-        var numberPlace = function(number, increment){
-            return number%increment;
-        }
-
-        var subtract15Minutes = function(time) {
-          var newTime = numberPlace(time, 100);
-          if(newTime >= 15) {
-            time = time - 15;
-          } else {
-            if(time >= 100 && time < 200) {
-              time = time + 1200;
-            }
-            time = time - 55;
+          var checkChild = function(volunteer) {
+            return volunteer.childTeam.length > 0;
           }
-          return time;
-        }
 
-        var add45Minutes = function(time) {
-          var newTime = numberPlace(time, 100);
-          if(newTime < 15) {
-            time = time + 45;
-          } else {
-            if(time >= 1215) {
-              time = time + 85;
-              time = time % 1200;
+          // function from http://blog.stevenlevithan.com/archives/javascript-roman-numeral-converter
+          var romanize = function(num) {
+              if (!+num)
+                  return false;
+              var digits = String(+num).split(""),
+                  key = ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM",
+                         "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC",
+                         "","I","II","III","IV","V","VI","VII","VIII","IX"],
+                  roman = "",
+                  i = 3;
+              while (i--)
+                  roman = (key[+digits.pop() + (i * 10)] || "") + roman;
+              return Array(+digits.join("") + 1).join("M") + roman;
+          }
+
+          var numberPlace = function(number, increment){
+              return number%increment;
+          }
+
+          var subtract15Minutes = function(time) {
+            var newTime = numberPlace(time, 100);
+            if(newTime >= 15) {
+              time = time - 15;
             } else {
-              time = time + 85;
+              if(time >= 100 && time < 200) {
+                time = time + 1200;
+              }
+              time = time - 55;
             }
+            return time;
           }
-          return time;
-        }
 
-        // first, find all team conflicts for volunteersNeeded
-        var volunteers;
-        Volunteer.query({}, function(results) {
-          volunteers = results;
+          var add45Minutes = function(time) {
+            var newTime = numberPlace(time, 100);
+            if(newTime < 15) {
+              time = time + 45;
+            } else {
+              if(time >= 1215) {
+                time = time + 85;
+                time = time % 1200;
+              } else {
+                time = time + 85;
+              }
+            }
+            return time;
+          }
 
-          // next, loop through volunteers and check for team conflicts
-          Team.query({}, function(teams) {
-            volunteers.forEach(function(vol, i, theVolArray) {
-              vol.commitments = [];
-              if(vol.childTeam.length > 0) {
-                // create array of child team / division stuff to look through
-                var array = vol.childTeam.split(',');
-                array.forEach(function(item, index, theArray) {
-                  item = item.trim();
-                  item = item.replace(/^#/, '');
-                  var memberNumber = item.split(' ')[0];
-                  var problemNumber = item.split(' ')[1].split('/')[0];
-                  var divisionNumber = romanize(item.split(' ')[1].split('/')[1]);
-                  theArray[index] = {'member' : memberNumber, 'problem' : problemNumber, 'division' : divisionNumber};
-                });
+          // first, find all team conflicts for volunteersNeeded
+          var volunteers;
+          Volunteer.query({}, function(results) {
+            volunteers = results;
 
-                // loop through each value in the array and check for a team conflict
-                array.forEach(function(item) {
-                  teams.forEach(function(team) {
-                    if(team.problem == item.problem && team.division == item.division && team.teamNumber == item.member) {
-                      var startTime = subtract15Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
-                      var endTime = add45Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+            // next, loop through volunteers and check for team conflicts
+            Team.query({}, function(teams) {
+              volunteers.forEach(function(vol, i, theVolArray) {
+                vol.commitments = [];
+                if(vol.childTeam.length > 0) {
+                  // create array of child team / division stuff to look through
+                  var array = vol.childTeam.split(',');
+                  array.forEach(function(item, index, theArray) {
+                    item = item.trim();
+                    item = item.replace(/^#/, '');
+                    var memberNumber = item.split(' ')[0];
+                    var problemNumber = item.split(' ')[1].split('/')[0];
+                    var divisionNumber = romanize(item.split(' ')[1].split('/')[1]);
+                    theArray[index] = {'member' : memberNumber, 'problem' : problemNumber, 'division' : divisionNumber};
+                  });
 
-                      if(startTime < 600) {
-                        startTime += 1200;
+                  // loop through each value in the array and check for a team conflict
+                  array.forEach(function(item) {
+                    teams.forEach(function(team) {
+                      if(team.problem == item.problem && team.division == item.division && team.teamNumber == item.member) {
+                        var startTime = subtract15Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+                        var endTime = add45Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+
+                        if(startTime < 600) {
+                          startTime += 1200;
+                        }
+
+                        if(endTime < 600) {
+                          endTime += 1200;
+                        }
+
+                        //console.log("Old: ", team.longTime, "new: ", longTime);
+                        vol.commitments.push({'start' : startTime, 'end' : endTime});
                       }
+                    });
+                  });
 
-                      if(endTime < 600) {
-                        endTime += 1200;
-                      }
+                  //console.log(array);
+                  theVolArray[i] = vol;
+                }
+              });
 
-                      //console.log("Old: ", team.longTime, "new: ", longTime);
-                      vol.commitments.push({'start' : startTime, 'end' : endTime});
+              volunteers.sort(function(a, b) {
+                return b.commitments.length - a.commitments.length;
+              });
+
+              // START ALGORITHM
+
+              Slot.query({}, function(slots) {
+                // call generate schedule here
+                console.log("Volunteers: ", volunteers);
+                console.log("Slots: ", slots);
+
+                var volunteersCopy = volunteers;
+                var duplicatedSlots = []; // slots that we need to add volunteers to
+                var final = []; // our final list of volunteers tied to slot ids and locations
+
+                // loop through each slot and create a new list of slots tied to locations
+                slots.forEach(function(slot) {
+                  slot.locations.forEach(function(location) {
+                    console.log("count: ", location.needed)
+                    for(var i = 0; i < location.needed; i++) {
+                      duplicatedSlots.push({'locationID' : location.locationID, 'slotID' : slot._id, 'start' : slot.start, 'end' : slot.end});
                     }
                   });
                 });
 
-                //console.log(array);
-                theVolArray[i] = vol;
-              }
-            });
+                console.log("Duplicated slots: ", duplicatedSlots);
 
-            volunteers.sort(function(a, b) {
-              return b.commitments.length - a.commitments.length;
-            });
-
-            // START ALGORITHM
-
-            Slot.query({}, function(slots) {
-              // call generate schedule here
-              console.log("Volunteers: ", volunteers);
-              console.log("Slots: ", slots);
-
-              var volunteersCopy = volunteers;
-              var duplicatedSlots = []; // slots that we need to add volunteers to
-              var final = []; // our final list of volunteers tied to slot ids and locations
-
-              // loop through each slot and create a new list of slots tied to locations
-              slots.forEach(function(slot) {
-                slot.locations.forEach(function(location) {
-                  for(var i = 0; i < location.value; i++) {
-                    duplicatedSlots.push({'locationID' : location.locationID, 'slotID' : slot._id, 'start' : slot.start, 'end' : slot.end});
+                // find a volunteer for each slot
+                duplicatedSlots.forEach(function(slot) {
+                  var vol = self.findVolunteer(volunteers, slot);
+                  console.log(vol);
+                  if(vol) {
+                    final.push({'volunteer' : vol, 'slotID' : slot.slotID, 'locationID' : slot.locationID});
+                  } else {
+                    console.log("NO ONE FITS");
                   }
-                });
-              });
-
-              console.log("Duplicated slots: ", duplicatedSlots);
-
-              // find a volunteer for each slot
-              duplicatedSlots.forEach(function(slot) {
-                var vol = self.findVolunteer(volunteers, slot);
-                console.log(vol);
-                if(vol) {
-                  final.push({'volunteer' : vol, 'slotID' : slot.slotID, 'locationID' : slot.locationID});
-                } else {
-                  console.log("NO ONE FITS");
-                }
 
 
-                var index = volunteers.indexOf(vol)
-                if(index > -1) {
-                  console.log("removing vol");
-                  volunteers.splice(index, 1);
-                }
-              });
-
-              console.log("Final: ", final);
-
-              // Loop through and organize final by slots
-              slots.forEach(function(slot) {
-                var data = [];
-                final.forEach(function(element) {
-                  if(element.slotID == slot._id) {
-                    data.push(element);
+                  var index = volunteers.indexOf(vol)
+                  if(index > -1) {
+                    console.log("removing vol");
+                    volunteers.splice(index, 1);
                   }
                 });
 
-                var vols = slot.volunteers;
+                console.log("Final: ", final);
 
-                data.forEach(function(element) {
-                  var commits = element.volunteer.locations;
-                  commits.push({'locationID' : element.locationID, 'slotID' : element.slotID});
-                  var slots2 = element.volunteer.slots;
-                  slots2.push(element.slotID);
-                  vols.push(element.volunteer._id);
-                  Volunteer.update({id: element.volunteer._id}, {'locations' : commits, 'slots' : slots2});
+                // Loop through and organize final by slots
+                slots.forEach(function(slot) {
+                  var data = [];
+                  final.forEach(function(element) {
+                    if(element.slotID == slot._id) {
+                      data.push(element);
+                    }
+                  });
+
+                  var vols = slot.volunteers;
+                  var locs = slot.locations;
+                  data.forEach(function(element) {
+                    var commits = element.volunteer.locations;
+                    commits.push({'locationID' : element.locationID, 'slotID' : element.slotID});
+                    var slots2 = element.volunteer.slots;
+                    slots2.push(element.slotID);
+                    vols.push(element.volunteer._id);
+
+                    locs.forEach(function(location) {
+                      if(location.locationID == element.locationID) {
+                        location.needed--;
+                      }
+                    })
+                    Volunteer.update({id: element.volunteer._id}, {'locations' : commits, 'slots' : slots2});
+                  });
+
+
+
+                  Slot.update({id: slot._id}, {'volunteers' : vols, 'locations' : locs});
+                  self.success = true;
+                  self.error = false;
                 });
-
-                Slot.update({id: slot._id}, {'volunteers' : vols});
-
               });
-            });
 
-            // END ALGORITHM
+              // END ALGORITHM
+            });
           });
-        });
+        }
       }
     }
 
