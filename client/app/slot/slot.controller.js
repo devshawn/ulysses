@@ -194,6 +194,7 @@ angular.module('ulyssesApp')
         var data = [];
         var newCount = 0;
         var allGood = true;
+        console.log(self.allLocations);
         self.allLocations.forEach(function(location) {
           console.log(location.name, "value: ", location.value, "count: ", (location.oldValue - location.count))
           if(location.value < (location.oldValue - location.count)) {
@@ -201,7 +202,9 @@ angular.module('ulyssesApp')
           }
           if(location.value > 0) {
             newCount += location.value;
-            data.push({'locationID' : location._id, 'value' : location.value});
+            var temp = (location.value - location.oldValue) + location.needed;
+            console.log(temp)
+            data.push({'locationID' : location._id, 'value' : location.value, 'needed' : temp});
           }
         });
 
@@ -291,6 +294,8 @@ angular.module('ulyssesApp')
             results2.value = location.value;
             results2.count = location.value;
             results2.oldValue = location.value;
+            results2.needed = location.needed;
+            console.log("Loc: ", location);
             locations.push(results2);
             self.allLocations.push(results2);
             if(inc == locs.length) {
@@ -409,9 +414,17 @@ angular.module('ulyssesApp')
                     self.errorMessage = "This person is already assigned to a time slot during this time period.";
                   } else {
                     self.slot.volunteers.push(self.volunteer);
-                    Slot.update({id: $stateParams.id}, self.slot);
                     Volunteer.get({id: self.volunteer}).$promise.then(function (results) {
                       console.log("async finished");
+
+                      self.slot.locations.forEach(function(loc2) {
+                        if(loc2.locationID == self.location) {
+                          console.log("found the match2");
+                          loc2.needed--;
+                        }
+                      })
+
+                      Slot.update({id: $stateParams.id}, self.slot);
 
                       Location.get({id: self.location}, function(results2) {
                         self.locations.forEach(function(loca) {
@@ -469,6 +482,15 @@ angular.module('ulyssesApp')
             if(index > -1) {
               slot.volunteers.splice(index, 1);
             }
+
+            volunteer.locations.forEach(function(location) {
+              slot.locations.forEach(function(location2) {
+                if(location.locationID == location2.locationID) {
+                  console.log("found the match");
+                  location2.needed++;
+                }
+              });
+            });
             Slot.update({id: self.slot._id}, slot);
           });
 
@@ -603,7 +625,7 @@ angular.module('ulyssesApp')
               self.locations.forEach(function(location) {
                 if(location.value > 0) {
                   count += location.value;
-                  locs.push({'locationID' : location._id, 'value' : location.value});
+                  locs.push({'locationID' : location._id, 'value' : location.value, 'needed' : location.value});
                 }
               });
 
