@@ -59,5 +59,15 @@ describe('Job View', function() {
       //browser.wait(function() { return false; }, 20000);
       expect(page.panelBody.getText()).toBe('There are currently no jobs.');
     });
+
+    it('should include a schedule page with out a schedule', function() {
+      browser.get(config.baseUrl + '/schedule');
+      expect(browser.getCurrentUrl()).toBe(config.baseUrl + '/schedule');
+
+
+      //expect(page.panelBody.getText()).toBe('In order to view the master schedule, please enter at least one job.');
+      //above attempt did not work
+      //should check to see if the schedule is empty...figure out next time
+    });
   });
 });
