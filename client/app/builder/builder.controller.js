@@ -105,7 +105,7 @@ angular.module('ulyssesApp')
           // first, find all team conflicts for volunteersNeeded
           var volunteers;
           Volunteer.query({}, function(results) {
-            volunteers = results;
+            var volunteers = results;
 
             // next, loop through volunteers and check for team conflicts
             Team.query({}, function(teams) {
@@ -149,18 +149,23 @@ angular.module('ulyssesApp')
                 }
               });
 
-              volunteers.sort(function(a, b) {
-                return b.commitments.length - a.commitments.length;
-              });
-
-              // START ALGORITHM
-
+              // now add slots to commitments
               Slot.query({}, function(slots) {
-                // call generate schedule here
+                volunteers.forEach(function(volunteer) {
+                  volunteer.slots.forEach(function(slot) {
+                    slots.forEach(function(slot2) {
+                      if(slot == slot2._id) {
+                        volunteer.commitments.push({'start' : slot2.start, 'end' : slot2.end });
+                      }
+                    });
+                  });
+                });
+
                 console.log("Volunteers: ", volunteers);
                 console.log("Slots: ", slots);
 
-                var volunteersCopy = volunteers;
+                var volunteersCopy = [];
+                console.log("Copy: ", volunteersCopy)
                 var duplicatedSlots = []; // slots that we need to add volunteers to
                 var final = []; // our final list of volunteers tied to slot ids and locations
 
@@ -186,11 +191,25 @@ angular.module('ulyssesApp')
                     console.log("NO ONE FITS");
                   }
 
-
                   var index = volunteers.indexOf(vol)
                   if(index > -1) {
                     console.log("removing vol");
                     volunteers.splice(index, 1);
+                    console.log("SLOT: ", slot);
+                    vol.commitments.push({'start' : slot.start, 'end' : slot.end})
+                    volunteersCopy.push(vol);
+                  }
+
+                  if(volunteers.length == 0) {
+                    console.log("length is 0!");
+                    console.log(volunteersCopy);
+                    console.log("1: ", volunteers);
+                    volunteersCopy.forEach(function(vol2) {
+                      volunteers.push(vol2);
+                    });
+                    volunteersCopy = [];
+                    console.log("2", volunteers);
+                    console.log("2", volunteersCopy);
                   }
                 });
 
@@ -230,6 +249,11 @@ angular.module('ulyssesApp')
                 });
               });
 
+              volunteers.sort(function(a, b) {
+                return b.commitments.length - a.commitments.length;
+              });
+
+              // START ALGORITHM
               // END ALGORITHM
             });
           });
@@ -253,11 +277,13 @@ angular.module('ulyssesApp')
         }
 
       });
+      console.log("To return: ", toReturn)
       return toReturn;
     }
 
       //checks to see if two time slots overlap
     self.isConflict = function(slot, commitment) {
+      console.log("slot", slot, "commit", commitment)
       var start1 = parseInt(slot.start);
       var end1 = parseInt(slot.end);
       var start2 = parseInt(commitment.start);
@@ -270,6 +296,7 @@ angular.module('ulyssesApp')
       }
       else if(start1 == start2 && end1 == end2)
       {
+        console.log("AAA");
         return true;
       } else {
         return false;
