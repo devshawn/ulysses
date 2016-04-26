@@ -1,5 +1,8 @@
 'use strict';
 
+var nodemailer = require('nodemailer');
+var sendmailTransport = require('nodemailer-sendmail-transport');
+
 // Production specific configuration
 // =================================
 module.exports = {
@@ -12,6 +15,13 @@ module.exports = {
   port:   process.env.OPENSHIFT_NODEJS_PORT ||
           process.env.PORT ||
           8080,
+
+  mail: {
+    // Enable to prevent actually sending:
+    dry: false,
+    // Transport (locally in dev):
+    transport: nodemailer.createTransport(sendmailTransport())
+  },
 
   // MongoDB connection options
   mongo: {
