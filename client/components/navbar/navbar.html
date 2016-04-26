@@ -15,12 +15,12 @@
             <a ui-sref="{{item.state}}">{{item.title}}</a>
         </li>
         <li ng-show="nav.isLoggedIn() && !nav.isOrganizer()"  ui-sref-active="active"><a ui-sref="viewer">View Schedules</a></li>
-        <li ng-show="nav.isOrganizer()" ui-sref-active="active"><a ui-sref="builder">Builder</a></li>
-        <li ng-show="nav.isOrganizer()" ui-sref-active="active"><a ui-sref="schedule">Schedule</a></li>
+        <li ng-show="nav.isOrganizer()" ui-sref-active="active"><a ui-sref="upload">Upload</a></li>
+        <li ng-show="nav.isOrganizer()" ui-sref-active="active"><a ui-sref="volunteer">Volunteers</a></li>
         <li ng-show="nav.isOrganizer()" ui-sref-active="active"><a ui-sref="job">Jobs</a></li>
         <li ng-show="nav.isOrganizer()" ui-sref-active="active"><a ui-sref="slot">Time Slots</a></li>
-        <li ng-show="nav.isOrganizer()" ui-sref-active="active"><a ui-sref="volunteer">Volunteers</a></li>
-        <li ng-show="nav.isOrganizer()" ui-sref-active="active"><a ui-sref="upload">Upload</a></li>
+        <li ng-show="nav.isOrganizer()" ui-sref-active="active"><a ui-sref="builder">Builder</a></li>
+        <li ng-show="nav.isOrganizer()" ui-sref-active="active"><a ui-sref="schedule">Schedule</a></li>
         <li ng-show="nav.isAdmin()" ui-sref-active="active"><a ui-sref="admin">Admin</a></li>
       </ul>
 
