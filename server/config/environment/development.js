@@ -7,6 +7,13 @@ var sendmailTransport = require('nodemailer-sendmail-transport');
 // ==================================
 module.exports = {
 
+  mail: {
+    // Enable to prevent actually sending:
+    dry: true,
+    // Transport (locally in dev):
+    transport: nodemailer.createTransport(sendmailTransport())
+  },
+
   // MongoDB connection options
   mongo: {
     uri: 'mongodb://localhost/ulysses-dev'
@@ -14,8 +21,5 @@ module.exports = {
 
   // Seed database on startup
   seedDB: true,
-
-  // Email transport (locally in dev)
-  transport: nodemailer.createTransport(sendmailTransport())
 
 };
