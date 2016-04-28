@@ -246,15 +246,13 @@ angular.module('ulyssesApp')
                   Slot.update({id: slot._id}, {'volunteers' : vols, 'locations' : locs});
                   self.success = true;
                   self.error = false;
+                  $window.location.href = '/schedule';
                 });
               });
 
               volunteers.sort(function(a, b) {
                 return b.commitments.length - a.commitments.length;
               });
-
-              // START ALGORITHM
-              // END ALGORITHM
             });
           });
         }
