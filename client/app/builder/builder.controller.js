@@ -104,7 +104,7 @@ angular.module('ulyssesApp')
 
           // first, find all team conflicts for volunteersNeeded
           var volunteers;
-          Volunteer.query({}, function(results) {
+          Volunteer.query({'isJudge' : false}, function(results) {
             var volunteers = results;
 
             // next, loop through volunteers and check for team conflicts
@@ -273,17 +273,16 @@ angular.module('ulyssesApp')
         if(!hasConflict && toReturn == false) {
           toReturn = volunteer;
         } else if(hasConflict && toReturn == false) {
-          console.log(volunteer.firstName, " has a conflict");
+          //console.log(volunteer.firstName, " has a conflict");
         }
 
       });
-      console.log("To return: ", toReturn)
+      //console.log("To return: ", toReturn)
       return toReturn;
     }
 
       //checks to see if two time slots overlap
     self.isConflict = function(slot, commitment) {
-      console.log("slot", slot, "commit", commitment)
       var start1 = parseInt(slot.start);
       var end1 = parseInt(slot.end);
       var start2 = parseInt(commitment.start);
