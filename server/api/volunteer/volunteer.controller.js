@@ -63,7 +63,7 @@ function handleError(res, statusCode) {
 
 // Gets a list of Volunteers
 export function index(req, res) {
-  Volunteer.findAsync()
+  Volunteer.findAsync(req.query)
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
