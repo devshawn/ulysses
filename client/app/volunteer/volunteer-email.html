@@ -12,34 +12,55 @@
       <span ng-repeat="person in to">{{ person.email }}</span>
     </div>
 
-    <div class="form-group">
-      <div>
-        <label>Template</label>
+    <div class="edit-message" ng-hide="previewing">
+      <div class="form-group">
+        <div>
+          <label>Template</label>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" type="button" ng-click="swap('judge')"> Judge </button>
+          <button class="btn btn-primary" type="button" ng-click="swap('nonJudge')"> Non-Judge </button>
+          <button class="btn btn-primary" type="button" ng-click="swap('notNeeded')"> Not Needed </button>
+          <button class="btn btn-primary" type="button" ng-click="swap('changes')"> Changes</button>
+        </div>
       </div>
 
-      <div class="btn-group">
-        <button class="btn btn-primary" type="button" ng-click="swap('judge')"> Judge </button>
-        <button class="btn btn-primary" type="button" ng-click="swap('nonJudge')"> Non-Judge </button>
-        <button class="btn btn-primary" type="button" ng-click="swap('notNeeded')"> Not Needed </button>
-        <button class="btn btn-primary" type="button" ng-click="swap('changes')"> Changes</button>
+      <div class="form-group">
+        <label for="volunteer-email-subject">Subject</label>
+        <input class="form-control" id="volunteer-email-subject" ng-model="subject" />
+      </div>
+
+      <div class="form-group">
+        <label for="volunteer-email-body">Body</label>
+        <textarea class="form-control" id="volunteer-email-body" rows="12" ng-model="body"></textarea>
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="volunteer-email-subject">Subject</label>
-      <input class="form-control" id="volunteer-email-subject" ng-model="subject" />
-    </div>
+    <div class="preview-message" ng-if="previewing">
+      <div class="form-group">
+        <label for="volunteer-email-subject">Subject</label>
+        <div>{{ subject }}</div>
+      </div>
 
-    <div class="form-group">
-      <label for="volunteer-email-body">Body</label>
-      <textarea class="form-control" id="volunteer-email-body" rows="12" ng-model="body"></textarea>
+      <div class="form-group">
+        <label for="volunteer-email-body">Body</label>
+        <div class="girl-look-at-that-body">{{ generate(to[index]) }}</div>
+      </div>
     </div>
   </div>
 
   {{ preview }}
 
   <div class="modal-footer">
-    <button class="btn btn-primary" type="submit">Send</button>
-    <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
+    <div ng-show="previewing">
+      <button class="btn btn-success" type="submit">Send</button>
+      <button class="btn btn-default" type="button" ng-click="previewing = false">Back</button>
+    </div>
+
+    <div ng-hide="previewing">
+      <button class="btn btn-primary" type="button" ng-click="previewing = true" ng-hide="previewing">Preview</button>
+      <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
+    </div>
   </div>
 </form>
