@@ -74,24 +74,15 @@ Odyssey of the Mind Organizer`
     };
 
     $scope.send = function() {
-      var output = $interpolate($scope.body);
-
-      $scope.preview = output({
-        volunteer: to[0]
-      });
-
       var emails = to.map(function(person) {
         return {
           to: person.email,
           subject: $scope.subject,
-          body: output({
-            assignments: 'lol we\'ll get to assignments later',
-            volunteer: person
-          })
+          body: $scope.generate(person)
         }
       });
 
-      //$http.post('/mail', emails).then($uibModalInstance.close);
+      $http.post('/mail', emails).then($uibModalInstance.close);
     };
 
     $scope.swap = function(key) {
