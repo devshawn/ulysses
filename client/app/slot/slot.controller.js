@@ -85,7 +85,8 @@ angular.module('ulyssesApp')
             console.log(results1);
             if(self.isConflict(slot1, results1))
             {
-              callback(true);
+              var str = "This person is currently assigned to a " + self.getJobTitle(results1.jobID) + " time slot from " + self.parseTime(results1.start) + " to " + self.parseTime(results1.end) + ".";
+              callback(str);
               hasCalledBack = true;
             } else if(i == results.slots.length) {
               if(!hasCalledBack) {
@@ -408,11 +409,7 @@ angular.module('ulyssesApp')
                 self.success = false;
               } else {
                 self.conflictLoop(self.slot, self.volunteer, function(success) {
-                  if(success === true) {
-                    self.error = true;
-                    self.success = false;
-                    self.errorMessage = "This person is already assigned to a time slot during this time period.";
-                  } else {
+                  if(success == false) {
                     self.slot.volunteers.push(self.volunteer);
                     Volunteer.get({id: self.volunteer}).$promise.then(function (results) {
                       console.log("async finished");
@@ -453,6 +450,10 @@ angular.module('ulyssesApp')
                     }, function (error) {
                       console.log("ERROR");
                     });
+                  } else {
+                    self.error = true;
+                    self.success = false;
+                    self.errorMessage = success;
                   }
                 });
               }
