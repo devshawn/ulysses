@@ -27,7 +27,32 @@ angular.module('ulyssesApp')
         templateUrl: 'app/volunteer/volunteer-email.html',
         resolve: {
           to: function() {
-            return volunteers;
+            var promises = [];
+
+            // I'm so sorry.
+            for (var v in volunteers) {
+              var volunteer = volunteers[v];
+
+              for (var l in volunteer.locations) {
+                var location = volunteer.locations[l];
+
+                promises.push(Location.get({ id: location.locationID }).$promise.then(function(response) {
+                  location.location = response;
+                }));
+
+                promises.push(Slot.get({ id: location.slotID }).$promise.then(function(response) {
+                  return location.slot = response;
+                }).then(function(response) {
+                  return Job.get({ id: response.jobID });
+                }).then(function(response) {
+                  location.job = response;
+                }));
+              }
+            }
+
+            return Promise.all(promises).then(function() {
+              return volunteers;
+            });
           }
         }
       });
