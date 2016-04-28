@@ -3,7 +3,7 @@
 var config = browser.params;
 var UserModel = require(config.serverConfig.root + '/server/api/user/user.model');
 
-describe('Schedule View', function() {
+describe('Slots View', function() {
   var page;
   var loginPage = require('../account/login/login.po');
 
@@ -54,7 +54,7 @@ describe('Schedule View', function() {
       }, 5000).then(done);
     });
 
-    it('should include a time slots page with any time slots', function() {
+    it('should include a time slots page without any time slots', function() {
       browser.get(config.baseUrl + '/slots');
       expect(browser.getCurrentUrl()).toBe(config.baseUrl + '/slots');
       expect(page.panelBody.getText()).toBe('There are currently no time slots.');
