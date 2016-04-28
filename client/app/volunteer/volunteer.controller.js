@@ -297,7 +297,7 @@ angular.module('ulyssesApp')
             problem: self.problem, division: self.division, submitDate: self.submitDate, lastModified: self.lastModified, mName: self.mName, mRegion: self.mRegion,
             childTeam: self.childTeam, coachName: self.coachName, coachEmail: self.coachEmail, tshirtSize: self.tshirtSize, positionHeld: self.positionHeld, comment: self.comment, isJudge: self.isJudge, slots: []};
           Volunteer.save(data);
-
+          alert("You have successfully added a volunteer.");
           self.firstName = "";
           self.lastName = "";
           self.assoc = "";
@@ -334,10 +334,12 @@ angular.module('ulyssesApp')
           self.positionHeld = "";
           self.comment = "";
           self.isJudge = false;
+          $anchorScroll();
         }
         else {
           console.log("error");
-          alert("Required information is missing!")
+          $anchorScroll();
+          alert("Required information is missing!");
         }
       }
     }
