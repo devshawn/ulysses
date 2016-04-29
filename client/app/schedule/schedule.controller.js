@@ -37,8 +37,11 @@ angular.module('ulyssesApp')
                   if(slot.jobID == job._id) {
                     slotsArray[i].vols = "None";
                     slotsArray[i].left = slot.volunteersNeeded - slot.volunteers.length;
+                    console.log("A: ", (slotsArray[i].left / slotsArray[i].volunteersNeeded))
                     if(slotsArray[i].left / slotsArray[i].volunteersNeeded >= 0.5) {
                       slotsArray[i].color = "color-red";
+                    } else if(slotsArray[i].left / slotsArray[i].volunteersNeeded > 0) {
+                      slotsArray[i].color = "color-light";//
                     }
 
                     slot.locations.forEach(function(location) {

@@ -27,3 +27,14 @@ a.color-red:focus {
   text-decoration: none;
   background-color: #ffa2a2;
 }
+
+.color-light {
+  background-color: #FFFF99;
+  color: #000;
+}
+
+a.color-light:hover,
+a.color-light:focus {
+  text-decoration: none;
+  background-color: #FFFF66;
+}
