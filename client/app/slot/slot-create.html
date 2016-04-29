@@ -1,5 +1,6 @@
 <div class="panel panel-default slot-container">
-  <div class="panel-heading">Create a time slot:</div>
+  <div class="panel-heading"><span ng-show="slotCtrl.isMultiple()">Create time slots</span><span ng-hide="slotCtrl.isMultiple()">Create a time slot</span>: <a class="pull-right" href="" ng-show="slotCtrl.isMultiple()" ng-click="slotCtrl.toggleMultiple()">Create Single Time Slot</a>
+  <a class="pull-right" href="" ng-hide="slotCtrl.isMultiple()" ng-click="slotCtrl.toggleMultiple()">Create Multiple Time Slots</a></div>
   <div class="panel-body" ng-hide="slotCtrl.canCreate()">
     {{ slotCtrl.errorMessage }}
   </div>
@@ -19,7 +20,7 @@
         </div>
         <div class="form-group">
           <label for="start">Start Time</label><br />
-            <select id="start" name="start" ng-model="slotCtrl.start" required>
+            <select id="start" name="start" ng-model="slotCtrl.start" ng-change="slotCtrl.updateEndTime()" required>
               <option value="800">8:00 AM</option>
               <option value="815">8:15 AM</option>
               <option value="830">8:30 AM</option>
@@ -63,7 +64,7 @@
               <option value="1800">6:00 PM</option>
             </select>
         </div>
-        <div class="form-group">
+        <div class="form-group" ng-hide="slotCtrl.isMultiple()">
           <label for="end">End Time</label><br />
           <select id="end" name="end" ng-model="slotCtrl.end" required>
             <option value="800">8:00 AM</option>
@@ -109,6 +110,22 @@
             <option value="1800">6:00 PM</option>
           </select>
         </div>
+        <div class="form-group" ng-show="slotCtrl.isMultiple()">
+          <label for="length">Shift Length</label><br />
+          <select id="length" name="length" ng-model="slotCtrl.length" ng-change="slotCtrl.updateEndTime()" required>
+            <option value="100">1 Hour</option>
+            <option value="200">2 Hour</option>
+            <option value="300">3 Hour</option>
+          </select>
+        </div>
+        <div class="form-group" ng-show="slotCtrl.isMultiple()" >
+          <label for="number"><strong>Slots To Create</strong></label><br />
+          <input type="number" ng-model="slotCtrl.number" ng-change="slotCtrl.updateEndTime()"></input>
+        </div>
+        <div class="form-group" ng-show="slotCtrl.isMultiple() && slotCtrl.endTime" >
+          <label for="number"><strong>End Time</strong></label><br />
+          {{ slotCtrl.endTime }}
+        </div>
         <div class="form-group">
           <label for="locations"><strong>Volunteers needed</strong></label><br />
           <!--<select id="locations" name="locations" ng-model="slotCtrl.locationToChoose">
@@ -124,7 +141,8 @@
           <label for="volunteersNeeded">Volunteers Needed</label><br />
           <input type="number" name="volunteersNeeded" id="volunteersNeeded" ng-model="slotCtrl.volunteersNeeded" min="1" max="100">
         </div>-->
-        <button type="submit" ng-click="slotCtrl.createSlot()" class="btn btn-primary">Create Time Slot</button>
+        <button type="submit" ng-click="slotCtrl.createSlot()" ng-hide="slotCtrl.isMultiple()" class="btn btn-primary">Create Time Slot</button>
+        <button type="submit" ng-click="slotCtrl.createSlotTwo()" ng-show="slotCtrl.isMultiple()" class="btn btn-primary">Create Time Slots</button>
       </form>
   </div>
 </div>

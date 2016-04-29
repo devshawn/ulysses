@@ -556,6 +556,23 @@ angular.module('ulyssesApp')
       self.locations = [];
       self.newLocations = [];
       self.locationsToAdd = [];
+      self.multiple = true;
+
+      self.toggleMultiple = function() {
+        self.multiple = !self.multiple;
+      }
+
+      self.isMultiple = function() {
+        return self.multiple;
+      }
+
+      self.updateEndTime = function() {
+        if(self.length && self.start && self.number) {
+          self.endTime = self.parseTime(parseInt(self.start) + parseInt(self.length) * parseInt(self.number));
+        }
+      }
+
+
 
       self.singleJob = true;
       self.jobs = [];
@@ -612,6 +629,79 @@ angular.module('ulyssesApp')
 
       self.errorMessage = "You cannot create a time slot for a non-existent job.";
       console.log(self.singleJob)
+
+      self.createSlotTwo = function () {
+        console.log("clicked submit on new button!");
+        if(self.singleJob) {
+          self.jobtitle = self.job._id;
+        }
+        if (self.start && self.jobtitle && self.length && self.number) {
+            if(self.number > 0) {
+              // loop through locations and add them up
+              var locs = [];
+              var count = 0;
+              self.locations.forEach(function(location) {
+                if(location.value > 0) {
+                  count += location.value;
+                  locs.push({'locationID' : location._id, 'value' : location.value, 'needed' : location.value});
+                }
+              });
+
+              console.log("locs", locs);
+              console.log("count", count);
+              if(locs.length > 0) {
+
+                for(var i = 0; i < self.number; i++) {
+                  console.log("Creating: ", i);
+                  var start = parseInt(self.start) + i * parseInt(self.length);
+                  var end = parseInt(self.start) + (i + 1) * parseInt(self.length);
+                  console.log(start, end);
+
+                  Slot.save({
+                    start: start,
+                    end: end,
+                    volunteers: [],
+                    locations: locs,
+                    volunteersNeeded: count,
+                    jobID: self.jobtitle,
+                    createdBy: Auth.getCurrentUser()._id
+                  }, function(results) {
+                    results["left"] = results.volunteersNeeded
+                    self.data.push(results);
+                  });
+                }
+
+                self.locations.forEach(function(location) {
+                  location.value = 0;
+                });
+                self.error = false;
+                self.jobtitle = "";
+                self.start = "";
+                self.number = "";
+                self.length = "";
+                self.endTime = "";
+                self.end = "";
+                self.success = true;
+              } else {
+                self.error = true;
+                self.success = false;
+                self.errorMessage = "You must enter volunteers needed for at least one location.";
+              }
+            } else if(parseInt(self.start) == parseInt(self.end)) {
+              self.error = true;
+              self.success = false;
+              self.errorMessage = "Your start time and end time cannot be the same.";
+            } else {
+              self.error = true;
+              self.success = false;
+              self.errorMessage = "Your start time and end time are not in chronological order.";
+            }
+        } else {
+          self.error = true;
+          self.success = false;
+          self.errorMessage = "You must fill out all of the required fields.";
+        }
+      }
 
       self.createSlot = function () {
         console.log("clicked submit!");
