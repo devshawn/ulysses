@@ -30,12 +30,8 @@ angular.module('ulyssesApp')
             var promises = [];
 
             // I'm so sorry.
-            for (var v in volunteers) {
-              var volunteer = volunteers[v];
-
-              for (var l in volunteer.locations) {
-                var location = volunteer.locations[l];
-
+            volunteers.forEach(function(volunteer) {
+              volunteer.locations.forEach(function(location) {
                 promises.push(Location.get({ id: location.locationID }).$promise.then(function(response) {
                   location.location = response;
                 }));
@@ -47,8 +43,8 @@ angular.module('ulyssesApp')
                 }).then(function(response) {
                   location.job = response;
                 }));
-              }
-            }
+              });
+            });
 
             return Promise.all(promises).then(function() {
               return volunteers;
