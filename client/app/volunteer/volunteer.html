@@ -1,8 +1,45 @@
 <div ng-show="volunteerCtrl.areThereVolunteers()"><div class="panel panel-default volunteer-container">
   <div class="panel-heading">Search for a specific volunteer:</div>
-  <div class="panel-body text-center">
-    <input type="search" ng-model="search.firstName" placeholder="filter volunteer by first name" aria-label="filter volunteer" class="filtering"/>
-    <input type="search" ng-model="search.lastName" placeholder="filter volunteer by last name" aria-label="filter volunteer" class="filtering" />
+  <div class="panel-body">
+    <div class="form-horizontal">
+      <div class="form-group">
+        <div class="col-md-2">
+          <label class="control-label">Name</label>
+        </div>
+
+        <div class="col-md-4">
+          <input type="search" ng-model="search.firstName" placeholder="First name" class="form-control" />
+        </div>
+
+        <div class="col-md-4">
+          <input type="search" ng-model="search.lastName" placeholder="Last name" class="form-control" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-md-2">
+          <label class="control-label">Role</label>
+        </div>
+
+        <div class="col-md-3">
+          <div class="checkbox">
+            <label><input type="radio" ng-model="search.isJudge" ng-value="" /> All</label>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="checkbox">
+            <label><input type="radio" ng-model="search.isJudge" ng-value="true" /> Judging</label>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="checkbox">
+            <label><input type="radio" ng-model="search.isJudge" ng-value="false" /> Non-judging</label>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div><br /></div>
 <div class="panel panel-default volunteer-container">
