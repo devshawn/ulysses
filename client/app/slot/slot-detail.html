@@ -21,7 +21,7 @@
       </select>-->
       <div class="list-group">
         <div class="group-item width-50" ng-repeat="location in slotCtrl.allLocations | orderBy:'name'">{{ location.name }}
-          <div class="pull-right"><input type="number" ng-model="location.value"></input></div>
+          <div class="pull-right"><input type="number" min="0" ng-model="location.value"></input></div>
         </div>
       </div>
     </div>
@@ -63,7 +63,7 @@
           <div class="form-group pull-left pad-left">
             <label for="volunteer">Pick a location</label><br />
             <select id="location" name="location" ng-model="slotCtrl.location" required>
-              <option ng-repeat="loc in slotCtrl.locations | orderBy: 'name'" ng-if="loc.count > 0" value="{{ loc._id }}" >{{ loc.name }}</option>
+              <option ng-repeat="loc in slotCtrl.locations | orderBy: 'name'" ng-if="loc.needed > 0" value="{{ loc._id }}" >{{ loc.name }}</option>
             </select>
           </div>
         </div>
