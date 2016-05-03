@@ -63,6 +63,12 @@
           </div>
         </div>
       </div>
+
+      <div class="form-group">
+        <div class="col-md-12">
+          <a ng-click="volunteerCtrl.email(filtered)" class="btn btn-sm btn-primary"><span class="glyphicon glyphicon-envelope"></span> Email displayed volunteers</a>
+        </div>
+      </div>
     </div>
   </div>
 </div><br /></div>
@@ -71,7 +77,7 @@
     <div class="pull-right"><a href="/volunteers/create">Add a volunteer</a></div>
   </div>
   <div class="list-group">
-    <div class="list-group-item no-padding" ng-repeat="volunteer in volunteerCtrl.data | filter: search | orderBy: 'lastName'">
+    <div class="list-group-item no-padding" ng-repeat="volunteer in filtered = (volunteerCtrl.data | filter: search | orderBy: 'lastName')">
       <a ng-href="/volunteers/{{volunteer._id}}" class="group-item">{{ volunteer.firstName }} {{ volunteer.lastName }}</a>
       <a ng-click="" ng-show="volunteer.hasSchedule" ng-href="/volunteers/schedule/{{volunteer._id}}"  class="btn btn-sm btn-success group-item-calendar"><span class="glyphicon glyphicon-list"></span></a>
       <a ng-click="volunteerCtrl.email([volunteer])" target="_blank" class="btn btn-sm btn-primary group-item-mail"><span class="glyphicon glyphicon-envelope"></span></a>

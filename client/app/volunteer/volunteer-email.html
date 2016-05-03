@@ -5,11 +5,34 @@
 
   <div class="modal-body">
     <div class="form-group">
-      <div>
-        <label for="volunteer-email-to">To</label>
+      <div ng-hide="previewing">
+        <div>
+          <label for="volunteer-email-to">To</label>
+        </div>
+
+        <span ng-repeat="person in to | limitTo: 1">{{ person.email }}</span>
+        <span ng-if="to.length > 1">and {{ to.length - 1 }} more</span>
       </div>
 
-      <span ng-repeat="person in to">{{ person.email }}</span>
+      <div class="text-center" ng-show="previewing">
+        <div class="row">
+          <div class="col-md-1 col-md-offset-2">
+            <a ng-click="index = index - 1" class="btn btn-sm btn-default" ng-hide="index <= 0">
+              <span class="glyphicon glyphicon-arrow-left"></span>
+            </a>
+          </div>
+
+          <div class="col-md-6">
+            {{ to[index].email }}
+          </div>
+
+          <div class="col-md-1">
+            <a ng-click="index = index + 1" class="btn btn-sm btn-default" ng-hide="index >= to.length - 1">
+              <span class="glyphicon glyphicon-arrow-right"></span>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="edit-message" ng-hide="previewing">
