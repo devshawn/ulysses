@@ -10,7 +10,9 @@ angular.module('ulyssesApp')
 
     $scope.generate = function(volunteer) {
       return $scope.interpolated ? $scope.interpolated({
-        assignments: volunteer.locations,
+        assignments: assignmentList(volunteer.locations),
+        first_name: volunteer.firstName,
+        last_name: volunteer.lastName,
         volunteer: volunteer
       }) : '';
     };
@@ -25,40 +27,40 @@ angular.module('ulyssesApp')
     $scope.index = 0;
 
     var templates = {
-      judge: `Dear {{ volunteer.firstName }},
+      judge: `Dear {{ first_name }},
 
 Thank you very much for volunteering as an Odyssey of the Mind judge. On tournament day, please report to the tournament location no later than 8:00 am for introductions and meetings with your judging teams. Your judging assignment will be:
 
-{{ assignments | assignmentList }}
+{{ assignments }}
 
 If there are any changes you need to make to this schedule, please contact me.
 
 Sincerely,
 
 Your Odyssey of the Mind Organizer`,
-      nonJudge: `Dear {{ volunteer.firstName }},
+      nonJudge: `Dear {{ first_name }},
 
 Thank you for your participation in this event! Your volunteer assigments are as follows:
 
-{{ assignments | assignmentList }}
+{{ assignments }}
 
 If there are any issues with these job shifts, please contact me.
 
 Sincerely,
 
 Your Odyssey of the Mind Organizer`,
-      notNeeded: `Dear {{ volunteer.firstName }},
+      notNeeded: `Dear {{ first_name }},
 
 Thank you for your participation in this event! Due to a variety of constraints, we were unable to assign you to any volunteer positions, but we hope you still enjoy coming to watch the performance.
 
 Sincerely,
 
 Your Odyssey of the Mind Organizer`,
-      changes: `Dear {{ volunteer.firstName }},
+      changes: `Dear {{ first_name }},
 
 There have been changes made to the volunteer schedule for Odyssey of the Mind. Your new schedule is:
 
-{{ assignments | assignmentList }}
+{{ assignments }}
 
 On tournament day, please report to the tournament location before your first shift. If there are any issues with these new job shifts please contact me.
 
@@ -86,8 +88,7 @@ Your Odyssey of the Mind Organizer`
     $scope.swap = function(key) {
       $scope.body = templates[key];
     };
-  })
-  .filter('assignmentList', function() {
+
     var parseTime = function(time) {
       if(time) {
         var strTime = "";
@@ -110,15 +111,15 @@ Your Odyssey of the Mind Organizer`
       }
     };
 
-    return function(assignments) {
-      var list = '';
-      console.log(assignments);
+    var assignmentList = function(assignments) {
+      var lines = [];
+
       assignments.forEach(function(assignment) {
-        list += parseTime(assignment.slot.start) + '-' + parseTime(assignment.slot.end) + ': ' +
+        lines.push(parseTime(assignment.slot.start) + '-' + parseTime(assignment.slot.end) + ': ' +
           assignment.job.title + ' ' +
-          '(' + assignment.location.name + ')\n'
+          '(' + assignment.location.name + ')');
       });
 
-      return list;
+      return lines.join('\n');
     };
   });
