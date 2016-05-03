@@ -47,6 +47,29 @@ angular.module('ulyssesApp')
       });
     }
 
+
+    self.parseTime = function(time) {
+      if(time) {
+        var strTime = "";
+        if(time >= 1300) {
+          time = time - 1200;
+          strTime = time.toString();
+          strTime = strTime.substring(0, strTime.length / 2) + ":" + strTime.substring(strTime.length / 2, strTime.length);
+          strTime = strTime + " PM";
+        } else if(time >= 1200) {
+          strTime = time.toString();
+          strTime = strTime.substring(0, strTime.length / 2) + ":" + strTime.substring(strTime.length / 2, strTime.length);
+          strTime = strTime + " PM";
+        } else {
+          strTime = time.toString();
+          strTime = strTime.substring(0, strTime.length / 2) + ":" + strTime.substring(strTime.length / 2, strTime.length);
+          strTime = strTime + " AM";
+        }
+
+        return strTime;
+      }
+    }
+
     if($state.current.name == "job") {
 
       self.data = [];
@@ -182,27 +205,6 @@ angular.module('ulyssesApp')
         }
       }
 
-      self.parseTime = function(time) {
-        if(time) {
-          var strTime = "";
-          if(time >= 1300) {
-            time = time - 1200;
-            strTime = time.toString();
-            strTime = strTime.substring(0, strTime.length / 2) + ":" + strTime.substring(strTime.length / 2, strTime.length);
-            strTime = strTime + " PM";
-          } else if(time >= 1200) {
-            strTime = time.toString();
-            strTime = strTime.substring(0, strTime.length / 2) + ":" + strTime.substring(strTime.length / 2, strTime.length);
-            strTime = strTime + " PM";
-          } else {
-            strTime = time.toString();
-            strTime = strTime.substring(0, strTime.length / 2) + ":" + strTime.substring(strTime.length / 2, strTime.length);
-            strTime = strTime + " AM";
-          }
-
-          return strTime;
-        }
-      }
 
       self.addLocation = function() {
         console.log("Adding location");
