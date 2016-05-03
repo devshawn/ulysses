@@ -197,8 +197,9 @@ angular.module('ulyssesApp')
         var allGood = true;
         console.log(self.allLocations);
         self.allLocations.forEach(function(location) {
-          console.log(location.name, "value: ", location.value, "count: ", (location.oldValue - location.count))
-          if(location.value < (location.oldValue - location.count)) {
+          if(location.needed == null) { location.needed = 0; }
+          console.log(location.name, "value: ", location.value, "count: ", (location.oldValue - location.needed))
+          if(location.value < (location.oldValue - location.needed)) {
             allGood = false;
           }
           if(location.value > 0) {
@@ -422,10 +423,11 @@ angular.module('ulyssesApp')
                       })
 
                       Slot.update({id: $stateParams.id}, self.slot);
-
+                      console.log("Locations: ", self.locations);
                       Location.get({id: self.location}, function(results2) {
                         self.locations.forEach(function(loca) {
                           if(loca._id == self.location) {
+                            console.log("Removing");
                             loca.needed--;
                           }
                         });
@@ -434,7 +436,6 @@ angular.module('ulyssesApp')
                             vol2.inSlot = true;
                           }
                         });
-
                         results.location = results2;
                         self.vols.push(results);
                         var vol = results;
@@ -485,13 +486,23 @@ angular.module('ulyssesApp')
             }
 
             volunteer.locations.forEach(function(location) {
-              slot.locations.forEach(function(location2) {
+              self.slot.locations.forEach(function(location2) {
                 if(location.locationID == location2.locationID) {
                   console.log("found the match");
                   location2.needed++;
                 }
               });
             });
+
+            volunteer.locations.forEach(function(location) {
+              slot.locations.forEach(function(location2) {
+                if(location.locationID == location2.locationID) {
+                  console.log("found the match3");
+                  location2.needed++;
+                }
+              });
+            });
+
             Slot.update({id: self.slot._id}, slot);
           });
 

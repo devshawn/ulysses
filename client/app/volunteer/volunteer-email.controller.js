@@ -112,7 +112,7 @@ Your Odyssey of the Mind Organizer`
 
     return function(assignments) {
       var list = '';
-
+      console.log(assignments);
       assignments.forEach(function(assignment) {
         list += parseTime(assignment.slot.start) + '-' + parseTime(assignment.slot.end) + ': ' +
           assignment.job.title + ' ' +
