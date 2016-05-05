@@ -18,9 +18,28 @@ describe('Controller: ScheduleCtrl', function () {
   it('should ...', function () {
     expect(1).toEqual(1);
   });
-  
-  //Parse Time Testing
 
+  //Testing of times
+  it('should expect times to be full of times', function(){
+    expect(ScheduleCtrl.times).toEqual([800,815,830,845,900,915,930,945,1000,1015,1030,1045,1100,1115,1130,1145,1200,1215,1230,1245,1300,1315,1330,1345,1400,1415,1430,1445,1500,1515,1530,1545,1600,1615,1630,1645,1700,1715,1730,1745,1800]);
+  });
+
+  //Testing of width
+  it('should expect width of 10.0', function() {
+    expect(ScheduleCtrl.width).toEqual(10.0);
+  });
+
+  //Testing slots
+  it('should expect slots to be null', function() {
+    expect(ScheduleCtrl.slots).toEqual([]);
+  });
+
+  //Testing data
+  it('should expect data to be nullish', function() {
+    expect(ScheduleCtrl.data).toEqual({"times" : []});
+  });
+
+  //Parse Time Testing
   it('should expect parse time PM to be true', function () {
     expect(ScheduleCtrl.parseTime(1300)).toBe("1:00 PM");
     expect(ScheduleCtrl.parseTime(1330)).toBe("1:30 PM");
