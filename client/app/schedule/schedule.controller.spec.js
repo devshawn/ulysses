@@ -18,7 +18,7 @@ describe('Controller: ScheduleCtrl', function () {
   it('should ...', function () {
     expect(1).toEqual(1);
   });
-  
+
   //Parse Time Testing
 
   it('should expect parse time PM to be true', function () {

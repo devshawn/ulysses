@@ -27,6 +27,35 @@ describe('Controller: SlotCtrl', function () {
   //  });
   //});
 
+  //testing initial state of SlotCtrl variables
+  it('should expect success to be false', function () {
+    expect(SlotCtrl.success).toBe(false);
+  });
+
+  it('should expect error to be false', function() {
+    expect(SlotCtrl.error).toBe(false);
+  });
+
+
+  //Test isSuccess
+  it('should expect isSuccess to be false', function() {
+    expect(SlotCtrl.isSuccess()).toEqual(false);
+  });
+
+  //Test isError
+  it('should expect isError to be false', function() {
+    expect(SlotCtrl.isError()).toEqual(false);
+  });
+
+  //Test locations
+  it('should expect locations to be null', function() {
+    expect(SlotCtrl.locations).toEqual([]);
+  });
+
+  //Test jobTitles
+  it('should expect jobTitles to be null', function() {
+    expect(SlotCtrl.jobTitles).toEqual([]);
+  });
 
   //Parse Time  Testing
 
