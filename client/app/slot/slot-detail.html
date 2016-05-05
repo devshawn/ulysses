@@ -1,7 +1,7 @@
 <div class="slot-container" ng-show="slotCtrl.doesSlotExist()">
   <div class="panel panel-default">
     <div class="panel-heading">Slot Info:
-      <div class="pull-right"><span ng-show="slotCtrl.isReadOnly()"><a href="" ng-click="slotCtrl.toggleEdit()">Edit Locations</a> | </span><a href="/slots">Back to slot list</a></div>
+      <div class="pull-right"><span ng-show="slotCtrl.isReadOnly()"><a href="" ng-click="slotCtrl.toggleEdit()">Edit Number of Volunteers Needed</a></div>
     </div>
     <div class="panel-body">
       <div class="warning" ng-show="slotCtrl.isError() && !slotCtrl.isReadOnly()">{{ slotCtrl.errorMessage }}<br /><br /></div>
@@ -56,9 +56,9 @@
             <select id="volunteer" name="volunteer" ng-model="slotCtrl.volunteer" required>
               <option ng-show="filteredVols.length" class="dropdown-header" disabled>People that prefer this job:</option>
               <option ng-show="filteredVols.length" ng-repeat="vol in filteredVols = (slotCtrl.volunteers | filter: slotCtrl.getJobTitle(slotCtrl.slot.jobID) | orderBy: 'lastName')" value="{{ vol._id }}" ng-if="!vol.inSlot">{{ vol.firstName }} {{ vol.lastName }}</option>
-              <option ng-show="filteredVols.length" class="dropdown-header" disabled>Volunteers:</option>
+              <option class="dropdown-header" disabled>Volunteers:</option>
               <option ng-repeat="vol in slotCtrl.volunteers | orderBy: 'lastName'" value="{{ vol._id }}" ng-if="!vol.inSlot && !vol.isJudge">{{ vol.firstName }} {{ vol.lastName }}</option>
-              <option ng-show="filteredVols.length" class="dropdown-header" disabled>Judges:</option>
+              <option class="dropdown-header" disabled>Judges:</option>
               <option ng-repeat="vol in slotCtrl.volunteers | orderBy: 'lastName'" value="{{ vol._id }}" ng-if="!vol.inSlot && vol.isJudge">{{ vol.firstName }} {{ vol.lastName }}</option>
             </select>
           </div>

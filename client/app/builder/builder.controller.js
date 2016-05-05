@@ -7,6 +7,7 @@ angular.module('ulyssesApp')
     self.success = false;
     self.errorMessage = "";
     self.submitted = false;
+    self.currentvolunteers = 0;
 
     var areThereJobs = false;
     var areThereSlots = false;
@@ -16,7 +17,13 @@ angular.module('ulyssesApp')
       } else {
         areThereJobs = false;
       }
-    })
+    });
+
+    Volunteer.query({}, function(volunteers) {
+      self.currentvolunteers = volunteers.filter(function(volunteer) {
+        return !volunteer.isJudge;
+      }).length;
+    });
 
     Slot.query({}, function(results) {
       if(results.length > 0) {
@@ -24,6 +31,16 @@ angular.module('ulyssesApp')
       } else {
         areThereSlots = false;
       }
+      var count = 0;
+      var count2 = 0;
+      results.forEach(function(slot) {
+        slot.locations.forEach(function(location) {
+          count += location.needed;
+          count2 += location.value;
+        });
+      });
+      self.neededVolunteers = count;
+      self.totalVolunteers = count2;
     })
     self.isSuccess = function () {
       return self.success;

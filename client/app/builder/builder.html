@@ -4,7 +4,10 @@
   <div class="panel-body">
     <div class="success" ng-show="builderCtrl.isSuccess()">You have successfully built a schedule.<br /></div>
     <div class="warning" ng-show="builderCtrl.isError()">{{ builderCtrl.errorMessage }}<br /><br /></div>
-    <div ng-hide="builderCtrl.isSuccess()">Build a schedule by clicking this button:
+    <div ng-hide="builderCtrl.isSuccess()">There are currently <strong>{{ builderCtrl.currentvolunteers }}</strong> volunteers in the system. <br />
+      You currently need <strong>{{ builderCtrl.neededVolunteers }} / {{ builderCtrl.totalVolunteers }}</strong> for all the slots. <br/ > <br />
+
+      Build a schedule by clicking this button:
     <br /><br />
     <button class="btn btn-success" type="submit" ng-click="builderCtrl.buildSchedule()" name="submit">Build Schedule</button></div>
   </div>
