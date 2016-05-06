@@ -23,6 +23,9 @@ angular.module('ulyssesApp')
       self.currentvolunteers = volunteers.filter(function(volunteer) {
         return !volunteer.isJudge;
       }).length;
+      self.currentjudges = volunteers.filter(function(volunteer) {
+        return volunteer.isJudge;
+      }).length;
     });
 
     Slot.query({}, function(results) {
