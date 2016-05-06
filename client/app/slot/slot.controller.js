@@ -3,7 +3,7 @@
 
 
 angular.module('ulyssesApp')
-  .controller('SlotCtrl', function ($scope, $state, $stateParams, Volunteer, Job, Slot, Auth, Location) {
+  .controller('SlotCtrl', function ($scope, $state, $stateParams, Volunteer, Job, Slot, Auth, Location, Team) {
     var self = this;
     self.success = false;
     self.error = false;
@@ -399,6 +399,53 @@ angular.module('ulyssesApp')
         }
       }
 
+      // function from http://blog.stevenlevithan.com/archives/javascript-roman-numeral-converter
+      var romanize = function(num) {
+          if (!+num)
+              return false;
+          var digits = String(+num).split(""),
+              key = ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM",
+                     "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC",
+                     "","I","II","III","IV","V","VI","VII","VIII","IX"],
+              roman = "",
+              i = 3;
+          while (i--)
+              roman = (key[+digits.pop() + (i * 10)] || "") + roman;
+          return Array(+digits.join("") + 1).join("M") + roman;
+      }
+
+      var numberPlace = function(number, increment){
+          return number%increment;
+      }
+
+      var subtract15Minutes = function(time) {
+        var newTime = numberPlace(time, 100);
+        if(newTime >= 15) {
+          time = time - 15;
+        } else {
+          if(time >= 100 && time < 200) {
+            time = time + 1200;
+          }
+          time = time - 55;
+        }
+        return time;
+      }
+
+      var add45Minutes = function(time) {
+        var newTime = numberPlace(time, 100);
+        if(newTime < 15) {
+          time = time + 45;
+        } else {
+          if(time >= 1215) {
+            time = time + 85;
+            time = time % 1200;
+          } else {
+            time = time + 85;
+          }
+        }
+        return time;
+      }
+
 
       self.addVolunteer = function() {
         if(self.volunteer) {
@@ -413,40 +460,90 @@ angular.module('ulyssesApp')
                   if(success == false) {
                     self.slot.volunteers.push(self.volunteer);
                     Volunteer.get({id: self.volunteer}).$promise.then(function (results) {
-                      console.log("async finished");
-
-                      self.slot.locations.forEach(function(loc2) {
-                        if(loc2.locationID == self.location) {
-                          console.log("found the match2");
-                          loc2.needed--;
-                        }
-                      })
-
-                      Slot.update({id: $stateParams.id}, self.slot);
-                      console.log("Locations: ", self.locations);
-                      Location.get({id: self.location}, function(results2) {
-                        self.locations.forEach(function(loca) {
-                          if(loca._id == self.location) {
-                            console.log("Removing");
-                            loca.needed--;
-                          }
-                        });
-                        self.volunteers.forEach(function(vol2) {
-                          if(vol2._id == self.volunteer) {
-                            vol2.inSlot = true;
-                          }
-                        });
-                        results.location = results2;
-                        self.vols.push(results);
+                      results.commitments = [];
+                      Team.query({}, function(teams) {
                         var vol = results;
-                        vol.slots.push(self.slot._id);
-                        vol.locations.push({"locationID" : self.location, "slotID" : self.slot._id});
-                        Volunteer.update({id: vol._id}, vol);
-                        self.slot["left"]--;
-                        self.success = true;
-                        self.error = false;
-                        self.volunteer = "";
-                        self.location = "";
+                        if(results.childTeam.length > 0) {
+                          var array = vol.childTeam.split(',');
+                          array.forEach(function(item, index, theArray) {
+                            item = item.trim();
+                            item = item.replace(/^#/, '');
+                            var memberNumber = item.split(' ')[0];
+                            var problemNumber = item.split(' ')[1].split('/')[0];
+                            var divisionNumber = romanize(item.split(' ')[1].split('/')[1]);
+                            theArray[index] = {'member' : memberNumber, 'problem' : problemNumber, 'division' : divisionNumber};
+                          });
+
+                          // loop through each value in the array and check for a team conflict
+                          array.forEach(function(item) {
+                            teams.forEach(function(team) {
+                              if(team.problem == item.problem && team.division == item.division && team.teamNumber == item.member) {
+                                var startTime = subtract15Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+                                var endTime = add45Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+
+                                if(startTime < 600) {
+                                  startTime += 1200;
+                                }
+
+                                if(endTime < 600) {
+                                  endTime += 1200;
+                                }
+
+                                //console.log("Old: ", team.longTime, "new: ", longTime);
+                                results.commitments.push({'start' : startTime, 'end' : endTime});
+                              }
+                            });
+                          });
+                        }
+                        console.log("async finished");
+                        console.log("Here: ", results.commitments);
+
+                        var hasChildConflict = false;
+                        results.commitments.forEach(function(comm) {
+                          if(self.isConflict(self.slot, comm)) {
+                            hasChildConflict = true;
+                          }
+                        });
+
+                        if(hasChildConflict) {
+                          self.success = false;
+                          self.error = true;
+                          self.errorMessage = "This volunteer has a conflict with their child's team during this time slot.";
+                        } else {
+                          self.slot.locations.forEach(function(loc2) {
+                            if(loc2.locationID == self.location) {
+                              console.log("found the match2");
+                              loc2.needed--;
+                            }
+                          })
+
+                          Slot.update({id: $stateParams.id}, self.slot);
+                          console.log("Locations: ", self.locations);
+                          Location.get({id: self.location}, function(results2) {
+                            self.locations.forEach(function(loca) {
+                              if(loca._id == self.location) {
+                                console.log("Removing");
+                                loca.needed--;
+                              }
+                            });
+                            self.volunteers.forEach(function(vol2) {
+                              if(vol2._id == self.volunteer) {
+                                vol2.inSlot = true;
+                              }
+                            });
+                            results.location = results2;
+                            self.vols.push(results);
+                            var vol = results;
+                            vol.slots.push(self.slot._id);
+                            vol.locations.push({"locationID" : self.location, "slotID" : self.slot._id});
+                            Volunteer.update({id: vol._id}, vol);
+                            self.slot["left"]--;
+                            self.success = true;
+                            self.error = false;
+                            self.volunteer = "";
+                            self.location = "";
+                          });
+                        }
                       });
                     }, function (error) {
                       console.log("ERROR");
