@@ -62,6 +62,7 @@
     <div class="panel-heading">Child's Times:</div>
     <div class="list-group">
       <div class="list-group-item" ng-repeat="slot in volunteerCtrl.volunteer.commitments | orderBy: 'start'">
+        <strong>Description</strong>: Division {{ slot.division }}, Problem {{ slot.problem }} <br />
         <strong>Start time</strong>: {{ volunteerCtrl.parseTime(slot.start) }} <br />
         <strong>End time</strong>: {{ volunteerCtrl.parseTime(slot.end) }} <br />
       </div>

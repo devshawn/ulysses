@@ -204,7 +204,8 @@ angular.module('ulyssesApp')
                   }
 
                   //console.log("Old: ", team.longTime, "new: ", longTime);
-                  vol.commitments.push({'start' : startTime, 'end' : endTime});
+                  console.log(item);
+                  vol.commitments.push({'division' : item.division, 'problem' : item.problem, 'start' : startTime, 'end' : endTime});
                 }
               });
             });
