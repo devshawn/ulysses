@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('ulyssesApp')
-  .controller('VolunteerCtrl', function ($scope, $state, $stateParams, Volunteer, $location, Location, $anchorScroll, $uibModal, Job, Slot) {
+  .controller('VolunteerCtrl', function ($scope, $state, $stateParams, Volunteer, $location, Location, $anchorScroll, $uibModal, Job, Slot, Team) {
     var self = this;
 
     self.data = [];
@@ -98,6 +98,13 @@ angular.module('ulyssesApp')
 
 
     } else if ($state.current.name == "volunteer-details" || $state.current.name == "volunteer-schedule") {
+      self.areChildren = false;
+
+      self.areThereChildren = function() {
+        if(self.volunteer && self.volunteer.commitments) {
+          return self.volunteer.commitments.length != 0;
+        }
+      }
 
       Job.query().$promise.then(function(results) {
         results.forEach(function(job) {
@@ -164,6 +171,45 @@ angular.module('ulyssesApp')
           }, function(error) {
             console.log("ERROR");
           });
+        });
+
+        Team.query({}, function(teams) {
+          if(teams.length > 0 && checkChild(response)) {
+            console.log("Has children");
+            var vol = response;
+            vol.commitments = [];
+            var array = vol.childTeam.split(',');
+            array.forEach(function(item, index, theArray) {
+              item = item.trim();
+              item = item.replace(/^#/, '');
+              var memberNumber = item.split(' ')[0];
+              var problemNumber = item.split(' ')[1].split('/')[0];
+              var divisionNumber = romanize(item.split(' ')[1].split('/')[1]);
+              theArray[index] = {'member' : memberNumber, 'problem' : problemNumber, 'division' : divisionNumber};
+            });
+
+            // loop through each value in the array and check for a team conflict
+            array.forEach(function(item) {
+              teams.forEach(function(team) {
+                if(team.problem == item.problem && team.division == item.division && team.teamNumber == item.member) {
+                  var startTime = subtract15Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+                  var endTime = add45Minutes(parseInt(team.longTime.replace(/[^0-9]/, '')));
+
+                  if(startTime < 600) {
+                    startTime += 1200;
+                  }
+
+                  if(endTime < 600) {
+                    endTime += 1200;
+                  }
+
+                  //console.log("Old: ", team.longTime, "new: ", longTime);
+                  vol.commitments.push({'start' : startTime, 'end' : endTime});
+                }
+              });
+            });
+            self.volunteer.commitments = vol.commitments;
+          }
         });
       });
 
@@ -233,6 +279,57 @@ angular.module('ulyssesApp')
           self.error = true;
           $anchorScroll();
         }
+      }
+
+      var checkChild = function(volunteer) {
+        return volunteer.childTeam.length > 0;
+      }
+
+      // function from http://blog.stevenlevithan.com/archives/javascript-roman-numeral-converter
+      var romanize = function(num) {
+          if (!+num)
+              return false;
+          var digits = String(+num).split(""),
+              key = ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM",
+                     "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC",
+                     "","I","II","III","IV","V","VI","VII","VIII","IX"],
+              roman = "",
+              i = 3;
+          while (i--)
+              roman = (key[+digits.pop() + (i * 10)] || "") + roman;
+          return Array(+digits.join("") + 1).join("M") + roman;
+      }
+
+      var numberPlace = function(number, increment){
+          return number%increment;
+      }
+
+      var subtract15Minutes = function(time) {
+        var newTime = numberPlace(time, 100);
+        if(newTime >= 15) {
+          time = time - 15;
+        } else {
+          if(time >= 100 && time < 200) {
+            time = time + 1200;
+          }
+          time = time - 55;
+        }
+        return time;
+      }
+
+      var add45Minutes = function(time) {
+        var newTime = numberPlace(time, 100);
+        if(newTime < 15) {
+          time = time + 45;
+        } else {
+          if(time >= 1215) {
+            time = time + 85;
+            time = time % 1200;
+          } else {
+            time = time + 85;
+          }
+        }
+        return time;
       }
 
 

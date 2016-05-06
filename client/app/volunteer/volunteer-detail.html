@@ -46,13 +46,26 @@
   <div class="panel panel-default volunteer-create-container">
     <div class="panel-heading">Assigned jobs:</div>
     <div class="list-group">
-      <div class="list-group-item" ng-repeat="slot in volunteerCtrl.slots | orderBy: 'start'"">
+      <div class="list-group-item" ng-repeat="slot in volunteerCtrl.slots | orderBy: 'start'">
         <strong>Job title</strong>: {{ volunteerCtrl.getJobTitle(slot.jobID) }} <br />
         <strong>Start time</strong>: {{ volunteerCtrl.parseTime(slot.start) }} <br />
         <strong>End time</strong>: {{ volunteerCtrl.parseTime(slot.end) }} <br />
         <strong>Location</strong>: {{ slot.location }} <br />
       </div>
       <div class="panel-body" ng-hide="volunteerCtrl.areThereSlots()">There are currently no assigned jobs for this volunteer.</div>
+    </div>
+  </div>
+
+  <br /><br />
+
+  <div class="panel panel-default volunteer-create-container">
+    <div class="panel-heading">Child's Times:</div>
+    <div class="list-group">
+      <div class="list-group-item" ng-repeat="slot in volunteerCtrl.volunteer.commitments | orderBy: 'start'">
+        <strong>Start time</strong>: {{ volunteerCtrl.parseTime(slot.start) }} <br />
+        <strong>End time</strong>: {{ volunteerCtrl.parseTime(slot.end) }} <br />
+      </div>
+      <div class="panel-body" ng-hide="volunteerCtrl.areThereChildren()">This volunteer currently does not have any children teams.</div>
     </div>
   </div>
 
@@ -337,5 +350,3 @@
     This volunteer does not exist.
   </div>
 </div>
-
-
