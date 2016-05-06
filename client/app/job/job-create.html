@@ -2,7 +2,7 @@
   <div class="panel-heading">Create a job:</div>
   <div class="panel-body">
     Create a job here. These are jobs that will later be used to create time slots for the schedule. <br /><br />
-    <div class="success" ng-show="jobCtrl.isSuccess()">You have successfully created a new job.<br /><br /></div>
+    <div class="success" ng-show="jobCtrl.isSuccess()">You have successfully created a new job: <a ng-href="/jobs/{{ jobCtrl.newJob.id }}">{{ jobCtrl.newJob.name }}</a>.<br /><br /></div>
     <div class="warning" ng-show="jobCtrl.isError()">{{ jobCtrl.errorMessage }}<br /><br /></div>
     <form>
       <div class="form-group">

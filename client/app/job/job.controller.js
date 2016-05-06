@@ -160,13 +160,16 @@ angular.module('ulyssesApp')
                 dt.push(data._id);
               });
               var data = { title: self.jobtitle, description: self.description, createdBy: Auth.getCurrentUser()._id, locations: dt };
-              Job.save(data);
+              Job.save(data, function(result) {
+                self.newJob = {'id' : result._id, 'name' : self.jobtitle};
+                console.log(self.newJob);
+                self.jobtitle = "";
+                self.description = "";
+                self.locations = [];
+                self.error = false;
+                self.success = true;
+              });
 
-              self.jobtitle = "";
-              self.description = "";
-              self.locations = [];
-              self.error = false;
-              self.success = true;
             });
           } else {
             self.error = true;
